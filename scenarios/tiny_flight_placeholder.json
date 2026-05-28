@@ -1,0 +1,197 @@
+{
+  "_comment": "===========================================",
+  "_comment2": "PLACEHOLDER SCENARIO — NON-AUTHORITATIVE",
+  "_comment3": "This is a scaffold for the flight training profile.",
+  "_comment4": "No real SOPs, checklists, or procedures are encoded.",
+  "_comment5": "Replace with certified training content before use.",
+  "_comment6": "===========================================",
+
+  "metadata": {
+    "title": "Smoke in the Cabin (Placeholder)",
+    "description": "PLACEHOLDER: A smoke indication scenario for flight training. This scenario is a structural scaffold only — no real procedures are encoded. It demonstrates the schema extension points for aircraft state, weather, failures, and ATC communication.",
+    "author": "PiperScenarioLab (Placeholder)",
+    "version": "0.1-placeholder",
+    "profile_id": "flight_training",
+    "difficulty": "medium",
+    "estimated_duration_minutes": 20
+  },
+
+  "profile": {
+    "profile_id": "flight_training",
+    "display_name": "Flight Training (Placeholder)",
+    "allowed_dynamic_creation": [],
+    "validation_rules": {
+      "allow_dynamic_flags": false
+    },
+    "prompt_template_dir": "profiles/flight_training/prompts",
+    "ui_labels": {
+      "acts_label": "Phases",
+      "scenes_label": "Situations",
+      "npcs_label": "Crew / ATC",
+      "items_label": "Systems",
+      "skills_label": "Procedures",
+      "clues_label": "Indications"
+    },
+    "state_extensions": {
+      "aircraft": {
+        "type": "A320",
+        "registration": ""
+      },
+      "phase_of_flight": "climb",
+      "weather": {
+        "condition": "IMC",
+        "visibility": 2000,
+        "wind": "270/15"
+      },
+      "failures": [],
+      "checklists": [],
+      "atc_comms": [],
+      "grading": {
+        "score": 0,
+        "notes": []
+      }
+    }
+  },
+
+  "acts": {
+    "pre_flight": {
+      "id": "pre_flight",
+      "name": "Pre-Flight / Climb Phase",
+      "description": "PLACEHOLDER: Aircraft is in climb phase. A smoke indication is reported from the cabin. This act would contain the initial assessment and response procedures in a real scenario.",
+      "scenes": {
+        "cockpit": {
+          "id": "cockpit",
+          "name": "Cockpit",
+          "description": "PLACEHOLDER: Flight deck environment. In a real scenario, this would include ECAM displays, overhead panel state, and systems indications. The pilot must assess the smoke report and coordinate with cabin crew and ATC.",
+          "connected_scenes": [],
+          "npcs_present": ["atc_tower", "cabin_lead"],
+          "items_present": [],
+          "clues_present": ["engine_abnormal_placeholder"]
+        }
+      },
+      "objectives": {
+        "aviate": {
+          "id": "aviate",
+          "description": "PLACEHOLDER: Maintain aircraft control. In a real scenario, this would involve fly the aircraft first — maintain attitude, airspeed, and altitude as appropriate to the situation.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        },
+        "navigate": {
+          "id": "navigate",
+          "description": "PLACEHOLDER: Determine position and plan routing. In a real scenario, this would involve assessing nearest suitable airport, terrain, and weather considerations.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        },
+        "communicate": {
+          "id": "communicate",
+          "description": "PLACEHOLDER: Communicate with ATC and cabin crew. In a real scenario, this would involve MAYDAY/PAN-PAN call, cabin crew coordination, and passenger PA as appropriate.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        }
+      },
+      "completion_flags": ["phase_complete_placeholder"]
+    }
+  },
+
+  "npcs": {
+    "atc_tower": {
+      "id": "atc_tower",
+      "name": "ATC Tower",
+      "role": "Air Traffic Control",
+      "current_scene": "cockpit",
+      "persona": {
+        "voice": "Calm, professional, standardized phraseology",
+        "motives": ["Ensure safe separation of aircraft", "Provide assistance to aircraft in distress"],
+        "fears": [],
+        "temperament": "calm professional",
+        "speech_style": "Standard ICAO phraseology. Clear, concise, no extraneous words. Prioritizes safety-critical information."
+      },
+      "relationship_to_player": {
+        "trust": 50,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 50
+      },
+      "knows": ["nearest_airports", "weather_info", "traffic_situation"],
+      "can_reveal": [],
+      "triggers": [],
+      "status": "available"
+    },
+    "cabin_lead": {
+      "id": "cabin_lead",
+      "name": "Cabin Lead",
+      "role": "Senior Flight Attendant",
+      "current_scene": "cockpit",
+      "persona": {
+        "voice": "Urgent but controlled, professional",
+        "motives": ["Ensure passenger safety", "Support flight crew"],
+        "fears": ["Cabin fire", "Passenger panic"],
+        "temperament": "urgent but professional",
+        "speech_style": "Direct and factual. Reports symptoms clearly. Uses standard crew communication protocol. Acknowledges commands promptly."
+      },
+      "relationship_to_player": {
+        "trust": 50,
+        "fear": 10,
+        "hostility": 0,
+        "respect": 50
+      },
+      "knows": ["cabin_conditions", "passenger_status", "smoke_source_estimate"],
+      "can_reveal": ["engine_abnormal_placeholder"],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+
+  "items": {},
+
+  "skills": {},
+
+  "player": {
+    "current_act": "pre_flight",
+    "current_scene": "cockpit",
+    "inventory": [],
+    "skills": [],
+    "clues": [],
+    "flags": {}
+  },
+
+  "global_flags": {},
+
+  "extensions": {
+    "_comment": "Profile-specific state extensions for flight training",
+    "aircraft": {
+      "type": "A320",
+      "registration": "N-PLACEHOLDER",
+      "_comment": "TODO: Add full aircraft state — engines, hydraulics, electrics, pneumatics, fuel"
+    },
+    "phase_of_flight": "climb",
+    "altitude": 7000,
+    "speed": 250,
+    "weather": {
+      "condition": "IMC",
+      "visibility_m": 2000,
+      "wind": "270/15",
+      "temperature": 15,
+      "_comment": "TODO: Add METAR parsing, TAF, sigmet, winds aloft"
+    },
+    "failures": [
+      {
+        "id": "engine_abnormal_placeholder",
+        "system": "engine",
+        "description": "PLACEHOLDER: An abnormal engine indication. In a real scenario, this would be a specific ECAM message (e.g., ENG 1 OIL LO PR) with associated procedures.",
+        "severity": "placeholder",
+        "_comment": "TODO: Replace with actual failure model — ECAM messages, QRH references, crew actions"
+      }
+    ],
+    "checklists": [],
+    "atc_comms": [],
+    "grading": {
+      "score": 0,
+      "notes": [],
+      "_comment": "TODO: Add competency-based grading rubric — aviate, navigate, communicate, manage systems"
+    }
+  }
+}

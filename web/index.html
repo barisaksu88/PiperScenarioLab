@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiperScenarioLab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <span>PiperScenarioLab</span>
+      <span id="mode-badge">Mock Mode</span>
+    </header>
+    <div class="main-container">
+      <div class="left-panel">
+        <div id="narration-log"></div>
+        <div id="dialogue-section"></div>
+      </div>
+      <div class="right-sidebar">
+        <div class="sidebar-section">
+          <h3>Scenario</h3>
+          <div id="scenario-info"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Current Act</h3>
+          <div id="current-act"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Current Scene</h3>
+          <div id="current-scene"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Active NPCs</h3>
+          <div id="active-npcs"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Objectives</h3>
+          <div id="objectives"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Inventory</h3>
+          <div id="inventory"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Skills</h3>
+          <div id="skills"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Clues</h3>
+          <div id="clues"></div>
+        </div>
+        <div class="sidebar-section debug">
+          <h3>Flags</h3>
+          <div id="flags"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <input type="text" id="user-input" placeholder="What do you do?" autocomplete="off">
+      <button id="send-btn">Send</button>
+      <div id="options"></div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

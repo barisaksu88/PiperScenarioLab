@@ -1,0 +1,48 @@
+# Flight Training Prompt Templates — PLACEHOLDER
+
+# ============================================================
+# This file is a placeholder. Flight training prompts are NOT
+# yet implemented. This profile exists only as a structural
+# scaffold to demonstrate the profile system's extensibility.
+# ============================================================
+
+# TODO: Implement ATC dialogue prompt
+# - Standard ICAO phraseology
+# - Emergency communication patterns (MAYDAY, PAN-PAN)
+# - Clearance readback requirements
+# - Handoff procedures
+
+# TODO: Implement cabin crew report prompt
+# - Smoke/fire detection reports
+# - Passenger status updates
+# - Evacuation readiness reports
+# - Injury assessments
+
+# TODO: Implement ECAM/EICAS message prompt
+# - Warning/Caution/Advisory levels
+# - System failure indications
+# - Associated procedure references
+# - Memory item identification
+
+# TODO: Implement checklist prompt
+# - Normal checklists (before start, before takeoff, after landing)
+# - Abnormal checklists (engine failure, smoke, depressurization)
+# - Emergency checklists
+# - Challenge-and-response format
+
+# TODO: Implement weather briefing prompt
+# - METAR/TAF interpretation
+# - Wind shear alerts
+# - IMC decision making
+# - Alternate airport planning
+
+# TODO: Implement grading/assessment prompt
+# - Competency-based assessment rubric
+# - Aviate-Navigate-Communicate-Manage framework
+# - Situational awareness tracking
+# - Decision making evaluation
+
+# NOTE: No real SOPs, QRH references, or proprietary training
+# materials are encoded in this placeholder. All actual procedure
+# content must be added by certified aviation training providers
+# through the proper content management workflow.
