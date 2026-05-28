@@ -1,6 +1,7 @@
 """PiperScenarioLab - FastAPI application."""
 
 import os
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from scenario_engine.engine import ScenarioEngine
-from scenario_engine.llm_client import LLMClient, LLMMode, PiperLLMAdapter
+from scenario_engine.llm_client import LLMClient, LLMMode, PiperLLMAdapter, LLMClientError
 from scenario_engine.models import (
     APIResponse,
     ScenariosListResponse,
@@ -46,7 +47,13 @@ async def lifespan(app: FastAPI):
     if llm_mode == LLMMode.PIPER:
         llm_client = PiperLLMAdapter(
             piper_repo_dir=os.environ.get("PIPER_REPO_DIR"),
+            config={
+                "base_url": os.environ.get("SCENARIO_LLM_BASE_URL"),
+                "model": os.environ.get("SCENARIO_LLM_MODEL"),
+                "timeout_seconds": os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS"),
+            },
         )
+        LOG.info("ScenarioLab piper mode configured for %s model=%s timeout=%ss", llm_client.base_url, llm_client.model, llm_client.timeout_seconds)
     else:
         llm_client = LLMClient(mode=llm_mode)
 
@@ -57,7 +64,7 @@ async def lifespan(app: FastAPI):
     try:
         await engine.load_scenario("tiny_fantasy_sample")
     except Exception as e:
-        print(f"[WARNING] Could not auto-load tiny_fantasy_sample: {e}")
+        LOG.warning("Could not auto-load tiny_fantasy_sample: %s", e)
 
     # Store engine as app.state.engine
     app.state.engine = engine
@@ -241,3 +248,5 @@ app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger(__name__)

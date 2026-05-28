@@ -155,3 +155,26 @@ def test_validator_npc_status_change(fantasy_scenario):
         rc for rc in result.rejected_changes if rc["field"] == "npc_status_changes"
     ]
     assert len(rejected_npc) >= 1
+
+
+def test_validator_rejects_illegal_llm_proposal(fantasy_scenario):
+    """A model proposal with multiple impossible changes should only accept legal ones."""
+    validator = Validator(fantasy_scenario)
+    proposal = TurnProposal(
+        narration="The model tries to invent things.",
+        state_delta=StateDelta(
+            inventory_add=["cracked_silver_medallion", "imaginary_amulet"],
+            move_player_to_scene="nonexistent_scene",
+            skills_add=["perception", "telepathy"],
+            clues_add=["impossible_clue"],
+            relationship_changes=[{"npc_id": "mara_bellkeeper", "trust": 7}],
+        ),
+    )
+    result = validator.validate_turn(proposal)
+
+    assert "cracked_silver_medallion" in result.accepted_delta.inventory_add
+    assert "perception" in result.accepted_delta.skills_add
+    assert result.accepted_delta.move_player_to_scene is None
+    assert result.accepted_delta.clues_add == []
+    assert any(change["value"] == "imaginary_amulet" for change in result.rejected_changes)
+    assert any(change["value"] == "nonexistent_scene" for change in result.rejected_changes)

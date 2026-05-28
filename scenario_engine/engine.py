@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -26,6 +27,12 @@ from scenario_engine.models import (
 from scenario_engine.repair import Repair
 from scenario_engine.storage import Storage
 from scenario_engine.validator import Validator
+
+LOG = logging.getLogger(__name__)
+
+
+def _debug_enabled() -> bool:
+    return os.environ.get("SCENARIO_DEBUG_LLM", "").strip() == "1"
 
 
 class ScenarioEngine:
@@ -100,9 +107,18 @@ class ScenarioEngine:
         selected_npcs = self.actor_selector.select_actors(
             turn_input.user_input, current_scene_id
         )
+        if _debug_enabled():
+            LOG.debug(
+                "selected actors turn=%s scene=%s actors=%s",
+                self.turn_number,
+                current_scene_id,
+                [npc.id for npc in selected_npcs],
+            )
 
         # Step 4: Build LLM prompt
         prompt = self._build_turn_prompt(turn_input, selected_npcs)
+        if _debug_enabled():
+            LOG.debug("prompt length turn=%s chars=%s", self.turn_number, len(prompt))
 
         # Step 5: Generate TurnProposal
         context = {
@@ -115,14 +131,19 @@ class ScenarioEngine:
                 prompt, self.scenario, context
             )
         except Exception as e:
+            LOG.warning("LLM turn generation failed; falling back to repair/minimal fallback: %s", e)
             raw_proposal = await self.repair.repair_turn_proposal(
                 str(e), str(e), context
             )
             if raw_proposal is None:
                 raw_proposal = self.repair.minimal_fallback(context)
+        if _debug_enabled():
+            LOG.debug("parsed proposal turn=%s payload=%s", self.turn_number, raw_proposal.model_dump(mode="json"))
 
         # Step 6: Validate the proposal
         validation = self.validator.validate_turn(raw_proposal)
+        if _debug_enabled() and validation.rejected_changes:
+            LOG.debug("validator rejected changes turn=%s changes=%s", self.turn_number, validation.rejected_changes)
 
         # Step 7: Apply accepted state delta
         self._apply_state_delta(validation.accepted_delta)

@@ -1,27 +1,38 @@
-"""LLM client adapter for PiperScenarioLab.
-
-This lab stays standalone by default. The optional Piper seam is intentionally
-lightweight: if a compatible Piper client cannot be imported, the adapter falls
-back to mock behavior instead of crashing the app.
-"""
+"""LLM client adapter for PiperScenarioLab."""
 
 from __future__ import annotations
 
+import json
+import logging
+import os
+import urllib.error
+import urllib.request
 from enum import Enum
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scenario_engine.models import (
-    DialogueLine,
-    Scenario,
-    StateDelta,
-    TurnProposal,
-)
+from scenario_engine.models import Scenario, TurnProposal
+
+LOG = logging.getLogger(__name__)
 
 
 class LLMMode(str, Enum):
     MOCK = "mock"
     PIPER = "piper"
+
+
+class LLMClientError(RuntimeError):
+    """Raised when the local LLM backend cannot be reached or returns unusable output."""
+
+
+def _debug_enabled() -> bool:
+    return os.environ.get("SCENARIO_DEBUG_LLM", "").strip() == "1"
+
+
+def _shorten(text: str, limit: int = 4000) -> str:
+    text = text or ""
+    if len(text) <= limit:
+        return text
+    return text[: limit - 20] + "...[truncated]"
 
 
 # Pre-built mock responses that exercise different delta types.
@@ -163,7 +174,7 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
     {
         "narration": (
             "The hilltop ruins loom against the darkening sky. Ancient stones form a circle, "
-            "and at the center you see fresh ash arranged in a deliberate pattern — the same symbol "
+            "and at the center you see fresh ash arranged in a deliberate pattern -- the same symbol "
             "from the medallion. The truth is beginning to take shape."
         ),
         "npc_dialogue": [
@@ -173,7 +184,7 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
                 "role": "Bellkeeper",
                 "tone": "solemn",
                 "text": "You see it now, don't you? The bell was never just a bell. It was a seal.",
-            },
+            }
         ],
         "state_delta": {
             "flags": {"discovered_truth": True, "act_2_complete": True},
@@ -204,137 +215,138 @@ class LLMClient:
         self.mode = mode
         self.config = config or {}
 
-    async def generate_turn(
-        self, prompt: str, scenario: Scenario, context: Dict[str, Any]
-    ) -> TurnProposal:
-        """Generate a TurnProposal. Mock mode returns canned responses."""
+    async def generate_turn(self, prompt: str, scenario: Scenario, context: Dict[str, Any]) -> TurnProposal:
+        """Generate a TurnProposal."""
         if self.mode == LLMMode.MOCK:
             turn_number = context.get("turn_number", 1)
             mock_data = _MOCK_RESPONSES[(turn_number - 1) % len(_MOCK_RESPONSES)]
             return TurnProposal.model_validate(mock_data)
-
-        # PIPER mode — would call external LLM
         return await self._generate_turn_piper(prompt, scenario, context)
 
-    async def _generate_turn_piper(
-        self, prompt: str, scenario: Scenario, context: Dict[str, Any]
-    ) -> TurnProposal:
-        """Placeholder for Piper LLM integration.
-
-        The standalone lab does not depend on Piper at runtime. If callers want
-        real Piper-backed generation they should use ``PiperLLMAdapter``.
-        """
-        # In a real implementation, this would call the Piper LLM client
-        # and parse the response into a TurnProposal.
-        turn_number = context.get("turn_number", 1)
-        mock_data = _MOCK_RESPONSES[(turn_number - 1) % len(_MOCK_RESPONSES)]
-        return TurnProposal.model_validate(mock_data)
+    async def _generate_turn_piper(self, prompt: str, scenario: Scenario, context: Dict[str, Any]) -> TurnProposal:
+        return await PiperLLMAdapter(config=self.config).generate_turn(prompt, scenario, context)
 
     async def repair_json(self, broken_json: str, schema_hint: str = "") -> Optional[Dict[str, Any]]:
-        """Attempt to repair invalid JSON. Mock mode returns minimal valid dict."""
         if self.mode == LLMMode.MOCK:
             return {
-                "narration": "(Mock repair fallback — something happened, but details are unclear.)",
+                "narration": "(Mock repair fallback - something happened, but details are unclear.)",
                 "npc_dialogue": [],
                 "state_delta": {},
                 "next_options": ["Continue"],
             }
-
-        # PIPER mode — would call external LLM for repair
         return None
 
     async def build_scenario(self, prompt: str) -> Optional[Dict[str, Any]]:
-        """Build a scenario from description. Mock returns None."""
         if self.mode == LLMMode.MOCK:
             return None
-
-        # PIPER mode — would call external LLM
         return None
 
 
 class PiperLLMAdapter(LLMClient):
-    """Thin adapter around Piper's nearby llama-server client seam.
+    """HTTP adapter for a local llama.cpp-compatible server."""
 
-    The clearest current integration point in the sibling Piper repo is
-    ``llm/llm_server_client.py`` and its ``LlamaServerClient.generate()``
-    interface, which accepts OpenAI-style chat messages and returns text.
+    def __init__(self, piper_client: Any = None, piper_repo_dir: str | None = None, config: Optional[Dict[str, Any]] = None):
+        del piper_client, piper_repo_dir
+        cfg = config or {}
+        base_url = str(
+            cfg.get("base_url")
+            or os.environ.get("SCENARIO_LLM_BASE_URL")
+            or "http://127.0.0.1:8080"
+        )
+        model = str(cfg.get("model") or os.environ.get("SCENARIO_LLM_MODEL") or "qwen")
+        timeout_seconds = float(
+            cfg.get("timeout_seconds")
+            or os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS")
+            or 30.0
+        )
+        super().__init__(
+            mode=LLMMode.PIPER,
+            config={
+                "base_url": base_url,
+                "model": model,
+                "timeout_seconds": timeout_seconds,
+            },
+        )
 
-    This adapter does not force that dependency. If a compatible client or
-    import path is unavailable, it records the reason and falls back to mock
-    mode so ``SCENARIO_LLM_MODE=piper`` still starts cleanly.
-    """
+    @property
+    def base_url(self) -> str:
+        return str(self.config["base_url"])
 
-    def __init__(self, piper_client: Any = None, piper_repo_dir: str | None = None):
-        mode = LLMMode.PIPER
-        config: Dict[str, Any] = {}
-        fallback_reason: Optional[str] = None
+    @property
+    def model(self) -> str:
+        return str(self.config["model"])
 
-        if piper_client is not None:
-            config["piper_client"] = piper_client
-        else:
-            resolved_client, fallback_reason = self._load_piper_client(piper_repo_dir)
-            if resolved_client is not None:
-                config["piper_client"] = resolved_client
-            else:
-                mode = LLMMode.MOCK
+    @property
+    def timeout_seconds(self) -> float:
+        return float(self.config["timeout_seconds"])
 
-        super().__init__(mode=mode, config=config)
-        self.piper_client = config.get("piper_client")
-        self.fallback_reason = fallback_reason
+    def build_messages(self, prompt: str) -> List[Dict[str, str]]:
+        return [
+            {
+                "role": "system",
+                "content": "You are a strict JSON-only narrator for PiperScenarioLab. Return only valid JSON matching the TurnProposal schema.",
+            },
+            {"role": "user", "content": prompt},
+        ]
+
+    async def generate_turn(self, prompt: str, scenario: Scenario, context: Dict[str, Any]) -> TurnProposal:
+        del scenario, context
+        messages = self.build_messages(prompt)
+        if _debug_enabled():
+            LOG.debug("piper mode prompt length=%s messages=%s", len(prompt), len(messages))
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": 0.7,
+            "stream": False,
+            "max_tokens": 1200,
+        }
+        raw = await self._post_json(payload)
+        content = self._extract_content(raw)
+        if _debug_enabled():
+            LOG.debug("raw llm response: %s", _shorten(content))
+        from scenario_engine.repair import Repair
+
+        proposal = await Repair(self).parse_turn_output(content, context={})
+        if _debug_enabled():
+            LOG.debug("parsed proposal: %s", proposal.model_dump(mode="json"))
+        return proposal
+
+    async def repair_json(self, broken_json: str, schema_hint: str = "") -> Optional[Dict[str, Any]]:
+        del schema_hint
+        from scenario_engine.repair import Repair
+
+        repaired = Repair.extract_json(broken_json)
+        return repaired
+
+    async def _post_json(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        url = self.base_url.rstrip("/") + "/v1/chat/completions"
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+                data = resp.read().decode("utf-8", errors="replace")
+        except urllib.error.URLError as exc:
+            raise LLMClientError(f"Unable to reach local LLM at {self.base_url}: {exc}") from exc
+        try:
+            return json.loads(data)
+        except json.JSONDecodeError as exc:
+            raise LLMClientError(f"Local LLM returned invalid JSON payload: {exc}") from exc
 
     @staticmethod
-    def _candidate_repo_dirs(explicit_repo_dir: str | None = None) -> List[Path]:
-        candidates: List[Path] = []
-        if explicit_repo_dir:
-            candidates.append(Path(explicit_repo_dir))
-
-        env_repo_dir = Path(__file__).resolve().parents[2]
-        candidates.append(env_repo_dir / "Piper")
-        candidates.append(Path("/mnt/c/Projects/Piper"))
-
-        deduped: List[Path] = []
-        seen: set[str] = set()
-        for candidate in candidates:
-            key = str(candidate)
-            if key in seen:
-                continue
-            seen.add(key)
-            deduped.append(candidate)
-        return deduped
-
-    @classmethod
-    def _load_piper_client(cls, explicit_repo_dir: str | None = None) -> tuple[Any | None, Optional[str]]:
-        import importlib
-        import sys
-
-        errors: List[str] = []
-
-        for repo_dir in cls._candidate_repo_dirs(explicit_repo_dir):
-            client_path = repo_dir / "llm" / "llm_server_client.py"
-            if not client_path.exists():
-                errors.append(f"missing {client_path}")
-                continue
-            if str(repo_dir) not in sys.path:
-                sys.path.insert(0, str(repo_dir))
-            try:
-                module = importlib.import_module("llm.llm_server_client")
-            except Exception as exc:
-                errors.append(f"{client_path}: {exc}")
-                continue
-
-            client_cls = getattr(module, "LlamaServerClient", None)
-            cfg_cls = getattr(module, "LlamaServerConfig", None)
-            if client_cls is None or cfg_cls is None:
-                errors.append(f"{client_path}: missing LlamaServerClient/LlamaServerConfig")
-                continue
-            return {"client_cls": client_cls, "config_cls": cfg_cls, "repo_dir": str(repo_dir)}, None
-
-        return None, "; ".join(errors) if errors else "Piper client not found"
-
-    async def generate_turn(
-        self, prompt: str, scenario: Scenario, context: Dict[str, Any]
-    ) -> TurnProposal:
-        # Real Piper transport is intentionally deferred. Until wired, we keep
-        # the app stable by using the mock proposal path when the transport is
-        # unavailable or not yet configured.
-        return await super().generate_turn(prompt, scenario, context)
+    def _extract_content(response: Dict[str, Any]) -> str:
+        choices = response.get("choices") or []
+        if not choices:
+            raise LLMClientError("Local LLM response was missing choices")
+        first = choices[0] or {}
+        if isinstance(first.get("message"), dict):
+            return str(first["message"].get("content") or "")
+        if isinstance(first.get("text"), str):
+            return first["text"]
+        delta = first.get("delta") or {}
+        return str(delta.get("content") or "")

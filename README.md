@@ -136,6 +136,45 @@ Today, `SCENARIO_LLM_MODE=piper` is safe but conservative:
 - if a compatible Piper client seam is discoverable, the adapter records that seam for future wiring
 - if not, it falls back to mock mode instead of crashing
 
+## Local LLM Mode
+
+`SCENARIO_LLM_MODE=piper` uses a local HTTP backend that speaks the OpenAI-compatible `/v1/chat/completions` shape.
+
+Environment variables:
+
+- `SCENARIO_LLM_BASE_URL` - default `http://127.0.0.1:8080`
+- `SCENARIO_LLM_MODEL` - default `qwen`
+- `SCENARIO_LLM_TIMEOUT_SECONDS` - default `30`
+- `SCENARIO_DEBUG_LLM=1` - emit prompt length, raw output, parsed proposal, and validator rejection diagnostics
+
+### Manual smoke
+
+Start your local `llama-server` or Piper-backed local LLM on the configured base URL, then run:
+
+```cmd
+set SCENARIO_LLM_MODE=piper
+set SCENARIO_LLM_BASE_URL=http://127.0.0.1:8080
+set SCENARIO_LLM_MODEL=qwen
+set SCENARIO_LLM_TIMEOUT_SECONDS=30
+C:\Projects\Piper\.venv\Scripts\python.exe app.py
+```
+
+Send one turn:
+
+```bash
+curl -s -X POST http://127.0.0.1:8000/api/turn ^
+  -H "Content-Type: application/json" ^
+  -d "{\"user_input\":\"Look around the village square\"}"
+```
+
+Expected output shape:
+
+- `narration` is a string
+- `npc_dialogue` is a list of dialogue objects
+- `state_delta` is a JSON object
+- `validation.accepted_delta` contains only legal changes
+- `validation.rejected_changes` records anything the validator rejected
+
 ## Running Tests
 
 ```bash
@@ -157,6 +196,7 @@ Verified in this standalone repo with `C:\Projects\Piper\.venv\Scripts\python.ex
 - free-text and option-button turns both update scenario state
 - session logs are written under `sessions/`
 - `SCENARIO_LLM_MODE=piper` starts safely without requiring Piper integration to be finished
+- `SCENARIO_LLM_MODE=piper` now targets a local OpenAI-compatible endpoint and falls back cleanly if it cannot connect
 
 This runs:
 - `test_models.py` -- Pydantic model validation, bounds, defaults, JSON parsing
