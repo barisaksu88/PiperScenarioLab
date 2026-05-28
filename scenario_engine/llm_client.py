@@ -6,11 +6,13 @@ import json
 import logging
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from scenario_engine.models import Scenario, TurnProposal
+from scenario_engine.debug import get_current_debug_run_dir, write_jsonl, write_text_artifact
 
 LOG = logging.getLogger(__name__)
 
@@ -294,6 +296,10 @@ class PiperLLMAdapter(LLMClient):
         messages = self.build_messages(prompt)
         if _debug_enabled():
             LOG.debug("piper mode prompt length=%s messages=%s", len(prompt), len(messages))
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_jsonl(run_dir / "llm_http_payload_debug.jsonl", {"messages": messages, "model": self.model, "base_url": self.base_url})
+                write_text_artifact("rendered_prompt.txt", prompt)
         payload = {
             "model": self.model,
             "messages": messages,
@@ -305,11 +311,17 @@ class PiperLLMAdapter(LLMClient):
         content = self._extract_content(raw)
         if _debug_enabled():
             LOG.debug("raw llm response: %s", _shorten(content))
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_text_artifact("raw_llm_response.txt", content)
         from scenario_engine.repair import Repair
 
         proposal = await Repair(self).parse_turn_output(content, context={})
         if _debug_enabled():
             LOG.debug("parsed proposal: %s", proposal.model_dump(mode="json"))
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_jsonl(run_dir / "turn_debug.jsonl", {"parsed_turn_proposal": proposal.model_dump(mode="json")})
         return proposal
 
     async def repair_json(self, broken_json: str, schema_hint: str = "") -> Optional[Dict[str, Any]]:

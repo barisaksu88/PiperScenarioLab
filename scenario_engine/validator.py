@@ -13,6 +13,7 @@ from scenario_engine.models import (
     TurnProposal,
     ValidationResult,
 )
+from scenario_engine.debug import get_current_debug_run_dir, write_jsonl
 
 
 class Validator:
@@ -41,6 +42,13 @@ class Validator:
 
         if result.rejected_changes:
             result.warnings.insert(0, f"Rejected {len(result.rejected_changes)} invalid change(s).")
+        run_dir = get_current_debug_run_dir()
+        if run_dir is not None and result.rejected_changes:
+            write_jsonl(run_dir / "validator_debug.jsonl", {
+                "rejected_changes": result.rejected_changes,
+                "warnings": result.warnings,
+                "accepted_delta": result.accepted_delta.model_dump(mode="json"),
+            })
 
         return result
 

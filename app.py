@@ -1,7 +1,7 @@
 """PiperScenarioLab - FastAPI application."""
 
-import os
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,8 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from scenario_lab_config import FRONTEND_DIST_DIR
 from scenario_engine.engine import ScenarioEngine
-from scenario_engine.llm_client import LLMClient, LLMMode, PiperLLMAdapter, LLMClientError
+from scenario_engine.llm_client import LLMClient, LLMMode, PiperLLMAdapter
 from scenario_engine.models import (
     APIResponse,
     ScenariosListResponse,
@@ -21,6 +22,9 @@ from scenario_engine.models import (
     TurnResult,
 )
 from scenario_engine.storage import Storage
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+LOG = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Startup / Lifespan
@@ -53,7 +57,12 @@ async def lifespan(app: FastAPI):
                 "timeout_seconds": os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS"),
             },
         )
-        LOG.info("ScenarioLab piper mode configured for %s model=%s timeout=%ss", llm_client.base_url, llm_client.model, llm_client.timeout_seconds)
+        LOG.info(
+            "ScenarioLab piper mode configured for %s model=%s timeout=%ss",
+            llm_client.base_url,
+            llm_client.model,
+            llm_client.timeout_seconds,
+        )
     else:
         llm_client = LLMClient(mode=llm_mode)
 
@@ -234,10 +243,7 @@ async def get_mode(request: Request):
 # ---------------------------------------------------------------------------
 
 # Determine the correct path for the web directory
-WEB_DIR = Path(__file__).parent / "web"
-if not WEB_DIR.exists():
-    WEB_DIR = Path("web")
-
+WEB_DIR = FRONTEND_DIST_DIR if FRONTEND_DIST_DIR.exists() else (Path(__file__).parent / "web")
 app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
 
 
@@ -247,6 +253,4 @@ app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger(__name__)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

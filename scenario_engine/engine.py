@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from scenario_engine.actor_selector import ActorSelector
 from scenario_engine.dialogue import DialogueManager
+from scenario_engine.debug import get_current_debug_run_dir, snapshot_state, write_jsonl
 from scenario_engine.llm_client import LLMClient
 from scenario_engine.models import (
     Act,
@@ -114,6 +115,12 @@ class ScenarioEngine:
                 current_scene_id,
                 [npc.id for npc in selected_npcs],
             )
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_jsonl(run_dir / "turn_debug.jsonl", {
+                    "turn_number": self.turn_number,
+                    "selected_actors": [npc.id for npc in selected_npcs],
+                })
 
         # Step 4: Build LLM prompt
         prompt = self._build_turn_prompt(turn_input, selected_npcs)
@@ -139,11 +146,25 @@ class ScenarioEngine:
                 raw_proposal = self.repair.minimal_fallback(context)
         if _debug_enabled():
             LOG.debug("parsed proposal turn=%s payload=%s", self.turn_number, raw_proposal.model_dump(mode="json"))
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_jsonl(run_dir / "turn_debug.jsonl", {
+                    "turn_number": self.turn_number,
+                    "parsed_turn_proposal": raw_proposal.model_dump(mode="json"),
+                })
 
         # Step 6: Validate the proposal
         validation = self.validator.validate_turn(raw_proposal)
         if _debug_enabled() and validation.rejected_changes:
             LOG.debug("validator rejected changes turn=%s changes=%s", self.turn_number, validation.rejected_changes)
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_jsonl(run_dir / "validator_debug.jsonl", {
+                    "turn_number": self.turn_number,
+                    "rejected_changes": validation.rejected_changes,
+                    "warnings": validation.warnings,
+                    "accepted_delta": validation.accepted_delta.model_dump(mode="json"),
+                })
 
         # Step 7: Apply accepted state delta
         self._apply_state_delta(validation.accepted_delta)
@@ -186,6 +207,8 @@ class ScenarioEngine:
         # Step 11: Save session state
         session_state = self._build_session_state_dict()
         self.storage.save_session(self.session_id, session_state)
+        if _debug_enabled():
+            snapshot_state("session_snapshot_latest.json", self.get_state())
 
         return turn_result
 

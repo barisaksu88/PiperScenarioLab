@@ -103,6 +103,23 @@ set SCENARIO_LLM_MODE=mock && python app.py
 
 Then open http://localhost:8000 in your browser.
 
+## One-Command Launch
+
+Recommended entrypoint:
+
+```cmd
+C:\Projects\Piper\.venv\Scripts\python.exe launcher.py
+```
+
+What the launcher does:
+
+1. Resolves runtime config, including Piper config values when available.
+2. Creates a timestamped debug run folder under `data/debug/runs/`.
+3. Rebuilds the frontend from `web_ui/frontend/` on every launch.
+4. Starts the FastAPI backend.
+5. Opens a desktop window with `pywebview` when available, otherwise falls back to the default browser.
+6. Writes launcher, backend, frontend build, and optional LLM debug artifacts for the current run.
+
 ## Using Piper's venv
 
 If you are working within the Piper codebase:
@@ -146,6 +163,9 @@ Environment variables:
 - `SCENARIO_LLM_MODEL` - default `qwen`
 - `SCENARIO_LLM_TIMEOUT_SECONDS` - default `30`
 - `SCENARIO_DEBUG_LLM=1` - emit prompt length, raw output, parsed proposal, and validator rejection diagnostics
+- `SCENARIO_AUTO_START_LLM=true|false` - control whether launcher starts `llama-server` automatically in `piper` mode
+- `SCENARIO_WINDOW_ENABLED=true|false` - control desktop window/browser launch
+- `SCENARIO_REBUILD_FRONTEND_ON_BOOT=true|false` - control frontend rebuild on every launch
 
 ### Manual smoke
 
@@ -175,6 +195,26 @@ Expected output shape:
 - `validation.accepted_delta` contains only legal changes
 - `validation.rejected_changes` records anything the validator rejected
 
+### Debug Artifacts
+
+Latest run pointer:
+
+- `data/debug/latest_run.txt`
+
+Per-run artifacts:
+
+- `launcher.log`
+- `backend.log`
+- `frontend_build.log`
+- `env_snapshot.json`
+- `resolved_config.json`
+- `session_snapshot_initial.json`
+- `session_snapshot_latest.json`
+- `llama_server.log` when ScenarioLab starts the server itself
+- `llm_http_payload_debug.jsonl` and other LLM debug files when `SCENARIO_DEBUG_LLM=1`
+
+To review the last run, open the folder listed in `data/debug/latest_run.txt`.
+
 ## Running Tests
 
 ```bash
@@ -197,6 +237,16 @@ Verified in this standalone repo with `C:\Projects\Piper\.venv\Scripts\python.ex
 - session logs are written under `sessions/`
 - `SCENARIO_LLM_MODE=piper` starts safely without requiring Piper integration to be finished
 - `SCENARIO_LLM_MODE=piper` now targets a local OpenAI-compatible endpoint and falls back cleanly if it cannot connect
+- launcher-based boot attempts frontend rebuild and backend startup on every run
+
+## Troubleshooting
+
+- `npm missing`: install Node.js so `npm.cmd` is available on Windows PATH.
+- `pywebview missing`: the launcher falls back to the default browser.
+- `llama-server not found`: set `SCENARIO_LLAMA_SERVER_EXE` or make sure Piper config points to a valid exe.
+- `model path not found`: set `SCENARIO_MODEL_PATH` or ensure Piper config points to a valid model file.
+- `port already in use`: stop the existing process or change `SCENARIO_PORT`.
+- `browser shows 0.0.0.0`: use the launcher URL from `http://127.0.0.1:<port>/` instead of binding host values.
 
 This runs:
 - `test_models.py` -- Pydantic model validation, bounds, defaults, JSON parsing

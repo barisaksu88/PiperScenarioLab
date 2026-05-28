@@ -20,4 +20,9 @@ htmlcov/
 sessions/*.json
 !sessions/.gitkeep
 
+data/debug/
+web_ui/frontend/node_modules/
+web_ui/frontend/dist/
+web_ui/frontend/package-lock.json
+
 *.log
