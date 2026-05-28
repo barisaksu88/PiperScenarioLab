@@ -148,6 +148,16 @@ Windows with Piper's venv:
 C:\Projects\Piper\.venv\Scripts\python.exe -m pytest tests\ -v
 ```
 
+## Verification Notes
+
+Verified in this standalone repo with `C:\Projects\Piper\.venv\Scripts\python.exe`:
+
+- `pytest tests/ -v` passes with all 28 tests green
+- `SCENARIO_LLM_MODE=mock` serves the web UI and API locally
+- free-text and option-button turns both update scenario state
+- session logs are written under `sessions/`
+- `SCENARIO_LLM_MODE=piper` starts safely without requiring Piper integration to be finished
+
 This runs:
 - `test_models.py` -- Pydantic model validation, bounds, defaults, JSON parsing
 - `test_validator.py` -- State delta validation (accept, reject, clamp, partial)
