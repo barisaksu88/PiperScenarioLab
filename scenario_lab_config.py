@@ -41,6 +41,7 @@ class ScenarioLabRuntimeConfig:
     scenario_rebuild_frontend_on_boot: bool = True
     scenario_auto_start_llm: bool = False
     scenario_stop_llm_on_exit: bool = False
+    scenario_allow_llm_fallback: bool = False
     scenario_allow_stale_frontend: bool = False
     piper_repo_dir: Path = field(default_factory=_default_piper_repo_dir)
     piper_config: Dict[str, Any] = field(default_factory=dict)
@@ -121,6 +122,7 @@ def load_runtime_config() -> ScenarioLabRuntimeConfig:
 
     auto_start_llm = _env_bool("SCENARIO_AUTO_START_LLM", llm_mode == "piper")
     stop_llm_on_exit = _env_bool("SCENARIO_STOP_LLM_ON_EXIT", llm_mode == "piper")
+    allow_llm_fallback = _env_bool("SCENARIO_ALLOW_LLM_FALLBACK", False)
 
     cfg = ScenarioLabRuntimeConfig(
         scenario_host=os.environ.get("SCENARIO_HOST", "127.0.0.1"),
@@ -134,6 +136,7 @@ def load_runtime_config() -> ScenarioLabRuntimeConfig:
         scenario_rebuild_frontend_on_boot=_env_bool("SCENARIO_REBUILD_FRONTEND_ON_BOOT", True),
         scenario_auto_start_llm=auto_start_llm,
         scenario_stop_llm_on_exit=stop_llm_on_exit,
+        scenario_allow_llm_fallback=allow_llm_fallback,
         scenario_allow_stale_frontend=_env_bool("SCENARIO_ALLOW_STALE_FRONTEND", False),
         piper_repo_dir=piper_repo_dir,
         piper_config=bridge_cfg,
@@ -145,4 +148,10 @@ def load_runtime_config() -> ScenarioLabRuntimeConfig:
 
 
 def config_summary(cfg: ScenarioLabRuntimeConfig) -> str:
-    return json.dumps(cfg.as_json(), indent=2, default=str)
+    if hasattr(cfg, "as_json"):
+        payload = cfg.as_json()
+    elif hasattr(cfg, "__dict__"):
+        payload = dict(cfg.__dict__)
+    else:
+        payload = cfg
+    return json.dumps(payload, indent=2, default=str)

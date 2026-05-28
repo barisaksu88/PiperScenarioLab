@@ -287,9 +287,13 @@ def main() -> int:
 
     logger, launcher_log, backend_log = _setup_logging(run_dir)
     logger.info("Resolved ScenarioLab config: %s", config_summary(cfg))
-    logger.info("Resolved Piper repo dir: %s", cfg.piper_repo_dir)
-    logger.info("Piper config import succeeded: %s", cfg.piper_config_import_succeeded)
-    logger.info("Resolved llama-server url/model: %s / %s", cfg.scenario_llm_base_url, cfg.scenario_llm_model)
+    logger.info("Resolved Piper repo dir: %s", getattr(cfg, "piper_repo_dir", None))
+    logger.info("Piper config import succeeded: %s", getattr(cfg, "piper_config_import_succeeded", False))
+    logger.info(
+        "Resolved llama-server url/model: %s / %s",
+        getattr(cfg, "scenario_llm_base_url", None),
+        getattr(cfg, "scenario_llm_model", None),
+    )
 
     try:
         if cfg.scenario_rebuild_frontend_on_boot:
@@ -309,8 +313,9 @@ def main() -> int:
             llama_manager.ensure_running()
         except Exception as exc:
             logger.error("LLM startup failed: %s", exc)
-            if not cfg.scenario_allow_stale_frontend:
+            if not cfg.scenario_allow_llm_fallback:
                 return 1
+            logger.warning("SCENARIO_ALLOW_LLM_FALLBACK is enabled; continuing with fallback/minimal LLM responses.")
 
     server, thread, scenario_app = _start_backend(cfg, logger)
     backend_url = f"http://{cfg.scenario_host}:{cfg.scenario_port}"

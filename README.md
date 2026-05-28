@@ -164,6 +164,7 @@ Environment variables:
 - `SCENARIO_LLM_TIMEOUT_SECONDS` - default `30`
 - `SCENARIO_DEBUG_LLM=1` - emit prompt length, raw output, parsed proposal, and validator rejection diagnostics
 - `SCENARIO_AUTO_START_LLM=true|false` - control whether launcher starts `llama-server` automatically in `piper` mode
+- `SCENARIO_ALLOW_LLM_FALLBACK=true|false` - allow backend startup to continue if local LLM auto-start fails
 - `SCENARIO_WINDOW_ENABLED=true|false` - control desktop window/browser launch
 - `SCENARIO_REBUILD_FRONTEND_ON_BOOT=true|false` - control frontend rebuild on every launch
 

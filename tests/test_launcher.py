@@ -74,3 +74,67 @@ def test_health_check_launches_and_waits(monkeypatch, tmp_path):
     assert mgr.ensure_running() is True
     assert mgr.owned_by_scenario_lab is True
     assert popen_calls
+
+
+def test_llm_fallback_flag_is_separate_from_frontend_fallback(monkeypatch, tmp_path):
+    cfg = SimpleNamespace(
+        scenario_llm_mode="piper",
+        scenario_llm_base_url="http://127.0.0.1:8080",
+        scenario_auto_start_llm=True,
+        scenario_allow_llm_fallback=False,
+        scenario_allow_stale_frontend=True,
+        scenario_host="127.0.0.1",
+        scenario_port=8000,
+        scenario_rebuild_frontend_on_boot=False,
+        scenario_window_enabled=False,
+        scenario_stop_llm_on_exit=False,
+        scenario_llm_timeout_seconds=1,
+        piper_config={
+            "LLAMA_SERVER_EXE": str(tmp_path / "llama-server.exe"),
+            "MODEL_PATH": str(tmp_path / "model.gguf"),
+        },
+    )
+    (tmp_path / "llama-server.exe").write_text("x", encoding="utf-8")
+    (tmp_path / "model.gguf").write_text("x", encoding="utf-8")
+    monkeypatch.setattr(launcher.LlamaServerManager, "ensure_running", lambda self: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(launcher, "_start_backend", lambda cfg, logger: (_ for _ in ()).throw(AssertionError("backend should not start")))
+    monkeypatch.setattr(launcher, "build_frontend", lambda cfg, run_dir, logger: True)
+    monkeypatch.setattr(launcher, "_wait_for_http", lambda *args, **kwargs: True)
+    monkeypatch.setattr(launcher.webbrowser, "open", lambda url: True)
+    monkeypatch.setattr(launcher, "load_runtime_config", lambda: cfg)
+    assert launcher.main() == 1
+
+
+def test_llm_fallback_flag_allows_continue(monkeypatch, tmp_path):
+    cfg = SimpleNamespace(
+        scenario_llm_mode="piper",
+        scenario_llm_base_url="http://127.0.0.1:8080",
+        scenario_auto_start_llm=True,
+        scenario_allow_llm_fallback=True,
+        scenario_allow_stale_frontend=False,
+        scenario_host="127.0.0.1",
+        scenario_port=8001,
+        scenario_rebuild_frontend_on_boot=False,
+        scenario_window_enabled=False,
+        scenario_stop_llm_on_exit=False,
+        scenario_llm_timeout_seconds=1,
+        piper_config={
+            "LLAMA_SERVER_EXE": str(tmp_path / "llama-server.exe"),
+            "MODEL_PATH": str(tmp_path / "model.gguf"),
+        },
+    )
+    (tmp_path / "llama-server.exe").write_text("x", encoding="utf-8")
+    (tmp_path / "model.gguf").write_text("x", encoding="utf-8")
+    class DummyServer:
+        should_exit = False
+    class DummyThread:
+        def is_alive(self):
+            return False
+        def join(self, timeout=None):
+            return None
+    monkeypatch.setattr(launcher.LlamaServerManager, "ensure_running", lambda self: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(launcher, "_start_backend", lambda cfg, logger: (DummyServer(), DummyThread(), None))
+    monkeypatch.setattr(launcher, "_wait_for_http", lambda *args, **kwargs: True)
+    monkeypatch.setattr(launcher.webbrowser, "open", lambda url: True)
+    monkeypatch.setattr(launcher, "load_runtime_config", lambda: cfg)
+    assert launcher.main() == 0
