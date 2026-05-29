@@ -23,6 +23,7 @@ class DialogueManager:
         self,
         dialogue_lines: List[DialogueLine],
         scenario: Scenario,
+        current_scene_id: str = "",
     ) -> List[DialogueLine]:
         """Validate and enrich dialogue lines.
 
@@ -30,10 +31,13 @@ class DialogueManager:
             1. Validate that speaker_id exists in scenario.npcs
             2. Fill in speaker_name and role from NPC data if missing/empty
             3. Filter out lines from NPCs with status "dead" or "unavailable"
+            4. Filter out lines from NPCs not in the current scene
 
         Args:
             dialogue_lines: Raw dialogue lines from a TurnProposal.
             scenario: The current scenario (contains NPC registry).
+            current_scene_id: The scene the player is currently in. If provided,
+                dialogue from NPCs in other scenes is filtered out.
 
         Returns:
             Enriched list of valid DialogueLine objects.
@@ -54,7 +58,11 @@ class DialogueManager:
             if npc.status in excluded_statuses:
                 continue
 
-            # Step 3: fill in missing fields from NPC data
+            # Step 3: filter out NPCs not in the current scene
+            if current_scene_id and npc.current_scene != current_scene_id:
+                continue
+
+            # Step 4: fill in missing fields from NPC data
             speaker_name = line.speaker_name
             if not speaker_name:
                 speaker_name = npc.name

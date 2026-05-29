@@ -70,6 +70,12 @@ class Act(BaseModel):
     scenes: Dict[str, Scene] = Field(default_factory=dict)
     objectives: Dict[str, Objective] = Field(default_factory=dict)
     completion_flags: List[str] = Field(default_factory=list)
+    ending_narration: str = ""
+
+    @field_validator("ending_narration", mode="before")
+    @classmethod
+    def _coerce_none_ending(cls, v):
+        return v or ""
 
 
 class Item(BaseModel):
@@ -144,6 +150,7 @@ class StateDelta(BaseModel):
     inventory_remove: List[str] = Field(default_factory=list)
     clues_add: List[str] = Field(default_factory=list)
     skills_add: List[str] = Field(default_factory=list)
+    used_skills: List[str] = Field(default_factory=list)
     relationship_changes: List[Dict[str, Any]] = Field(default_factory=list)
     move_player_to_scene: Optional[str] = None
     move_npc_to_scene: List[Dict[str, str]] = Field(default_factory=list)
@@ -175,11 +182,13 @@ class TurnResult(BaseModel):
     state_delta: StateDelta = Field(default_factory=StateDelta)
     validation: ValidationResult = Field(default_factory=ValidationResult)
     next_options: List[str] = Field(default_factory=list)
+    used_skills: List[str] = Field(default_factory=list)
     player_state: PlayerState = Field(default_factory=PlayerState)
     active_npcs: List[NPC] = Field(default_factory=list)
     current_act: Optional[str] = None
     current_scene: Optional[Scene] = None
     timestamp: str = ""
+    ending: Optional[str] = None
 
 
 class SessionLogEntry(BaseModel):
@@ -191,6 +200,7 @@ class SessionLogEntry(BaseModel):
     accepted_state_delta: StateDelta = Field(default_factory=StateDelta)
     rejected_changes: List[Dict[str, Any]] = Field(default_factory=list)
     validator_warnings: List[str] = Field(default_factory=list)
+    used_skills: List[str] = Field(default_factory=list)
     next_options: List[str] = Field(default_factory=list)
 
 
@@ -216,3 +226,5 @@ class SessionStateResponse(BaseModel):
     skills: List[Skill] = Field(default_factory=list)
     flags: Dict[str, Any] = Field(default_factory=dict)
     turn_number: int = 0
+    ending: Optional[str] = None
+    session_id: Optional[str] = None

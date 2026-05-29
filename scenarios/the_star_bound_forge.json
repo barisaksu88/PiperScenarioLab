@@ -1,0 +1,403 @@
+{
+  "metadata": {
+    "title": "The Star-Bound Forge",
+    "description": "A blacksmith must repair a fractured celestial hammer before the sky collapses, racing against time across dimensions of pure magic. Failure means eternal darkness, but success requires forging a weapon from the heart of a dying star.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1_gathering": {
+      "id": "act_1_gathering",
+      "name": "The Gathering of Fragments",
+      "description": "The blacksmith awakens to the crackling sky and begins searching for the first components needed to repair the hammer.",
+      "scenes": {
+        "scene_workshop_void": {
+          "id": "scene_workshop_void",
+          "name": "Floating Workshop",
+          "description": "The blacksmith stands in a void workshop holding a cracked hammer as the sky above cracks open.",
+          "connected_scenes": [
+            "scene_stardust_field"
+          ],
+          "npcs_present": [
+            "npc_elara"
+          ],
+          "items_present": [
+            "item_dying_hammer"
+          ],
+          "clues_present": [
+            "clue_star_dust_location"
+          ]
+        },
+        "scene_stardust_field": {
+          "id": "scene_stardust_field",
+          "name": "Stardust Field",
+          "description": "A field of floating star fragments awaits collection to begin the repair process.",
+          "connected_scenes": [
+            "scene_workshop_void",
+            "scene_void_threshold"
+          ],
+          "npcs_present": [
+            "npc_mother"
+          ],
+          "items_present": [
+            "item_star_dust"
+          ],
+          "clues_present": []
+        },
+        "scene_void_threshold": {
+          "id": "scene_void_threshold",
+          "name": "Void Threshold",
+          "description": "A dangerous edge where the void begins to pull at the blacksmith's resolve.",
+          "connected_scenes": [
+            "scene_stardust_field",
+            "scene_hammer_repair"
+          ],
+          "npcs_present": [
+            "npc_kaelen"
+          ],
+          "items_present": [
+            "item_void_shield"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_collect_dust": {
+          "id": "obj_collect_dust",
+          "description": "Collect enough star dust to stabilize the dying hammer.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": [
+            "clue_star_dust_location"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_dust_collected"
+      ],
+      "ending_narration": ""
+    },
+    "act_2_shielding": {
+      "id": "act_2_shielding",
+      "name": "The Shielding",
+      "description": "With the hammer partially repaired, the blacksmith must defend against the Void-Beast's initial assault.",
+      "scenes": {
+        "scene_hammer_repair": {
+          "id": "scene_hammer_repair",
+          "name": "Hammer Reforging",
+          "description": "The blacksmith combines gathered star dust with the dying hammer to create a temporary shield.",
+          "connected_scenes": [
+            "scene_void_threshold",
+            "scene_void_beast_encounter"
+          ],
+          "npcs_present": [
+            "npc_elara"
+          ],
+          "items_present": [
+            "item_dying_hammer",
+            "item_star_dust"
+          ],
+          "clues_present": []
+        },
+        "scene_void_beast_encounter": {
+          "id": "scene_void_beast_encounter",
+          "name": "Void-Beast Encounter",
+          "description": "The Void-Beast emerges from the cracks, testing the newly forged shield.",
+          "connected_scenes": [
+            "scene_hammer_repair",
+            "scene_sun_tear_retrieval",
+            "scene_final_battle"
+          ],
+          "npcs_present": [
+            "npc_kaelen"
+          ],
+          "items_present": [
+            "item_void_shield"
+          ],
+          "clues_present": [
+            "clue_sun_tear_location"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_defend_world": {
+          "id": "obj_defend_world",
+          "description": "Survive the Void-Beast's first wave using the shield.",
+          "status": "active",
+          "required_flags": [
+            "flag_dust_collected"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_shield_active"
+      ],
+      "ending_narration": ""
+    },
+    "act_3_restoration": {
+      "id": "act_3_restoration",
+      "name": "The Final Restoration",
+      "description": "The blacksmith locates the sun tear, defeats the Void-Beast, and restores the celestial order.",
+      "scenes": {
+        "scene_sun_tear_retrieval": {
+          "id": "scene_sun_tear_retrieval",
+          "name": "Sun Tear Retrieval",
+          "description": "The blacksmith reaches the sun tear to channel its power into the hammer.",
+          "connected_scenes": [
+            "scene_void_beast_encounter",
+            "scene_final_battle"
+          ],
+          "npcs_present": [
+            "npc_mother"
+          ],
+          "items_present": [
+            "item_sun_tear"
+          ],
+          "clues_present": []
+        },
+        "scene_final_battle": {
+          "id": "scene_final_battle",
+          "name": "Final Battle with Void-Beast",
+          "description": "Using the sun tear's power, the blacksmith delivers the final blow to the Void-Beast.",
+          "connected_scenes": [
+            "scene_sun_tear_retrieval",
+            "scene_sky_sealed",
+            "scene_void_beast_encounter"
+          ],
+          "npcs_present": [
+            "npc_kaelen",
+            "npc_elara"
+          ],
+          "items_present": [
+            "item_dying_hammer",
+            "item_sun_tear",
+            "item_void_shield"
+          ],
+          "clues_present": []
+        },
+        "scene_sky_sealed": {
+          "id": "scene_sky_sealed",
+          "name": "Sky Sealed",
+          "description": "The hammer is fully reforged, the sky seals, and the sun rises again.",
+          "connected_scenes": [
+            "scene_final_battle"
+          ],
+          "npcs_present": [
+            "npc_mother"
+          ],
+          "items_present": [
+            "item_dying_hammer"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_restore_sun": {
+          "id": "obj_restore_sun",
+          "description": "Use the sun tear to fully restore the hammer and the sky.",
+          "status": "active",
+          "required_flags": [
+            "flag_shield_active"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_sun_restored"
+      ],
+      "ending_narration": "The hammer shines with a blinding, eternal glow as the sky closes the last of its cracks. The blacksmith stands in silence, watching the sun rise over a world saved by their hands."
+    }
+  },
+  "npcs": {
+    "npc_elara": {
+      "id": "npc_elara",
+      "name": "Elara, the Star-Touched",
+      "role": "Apprentice Artificer",
+      "current_scene": "workshop",
+      "persona": {
+        "voice": "Soft, trembling, yet determined",
+        "motives": [
+          "To fix the hammer before the Void takes everything",
+          "To prove her worth to the Master"
+        ],
+        "fears": [
+          "Failure",
+          "Being left behind in the dark"
+        ],
+        "temperament": "Anxious but diligent",
+        "speech_style": "Uses metaphors related to light and weaving, speaks in short, urgent sentences"
+      },
+      "relationship_to_player": {
+        "trust": 5,
+        "fear": 10,
+        "hostility": 0,
+        "respect": 15
+      },
+      "knows": [
+        "The location of the first star fragment in the Nebula of Whispers",
+        "How the hammer's core cracked during the last eclipse"
+      ],
+      "can_reveal": [
+        "The secret passage behind the anvil",
+        "The true nature of the Void-Beast's weakness"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_kaelen": {
+      "id": "npc_kaelen",
+      "name": "Kaelen, the Void-Warden",
+      "role": "Guardian of the Threshold",
+      "current_scene": "threshold",
+      "persona": {
+        "voice": "Deep, resonant, echoing like a bell",
+        "motives": [
+          "To delay the Void-Beast long enough for the forge to be ready",
+          "To maintain the balance between star and void"
+        ],
+        "fears": [
+          "The inevitable fall of the sky",
+          "Being forgotten by those he protects"
+        ],
+        "temperament": "Stoic and weary",
+        "speech_style": "Speaks in riddles and archaic formalities, pauses frequently to observe the player"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 5,
+        "hostility": 10,
+        "respect": 10
+      },
+      "knows": [
+        "The ritual required to seal the sky cracks",
+        "That the blacksmith must sacrifice something of their own light"
+      ],
+      "can_reveal": [
+        "The weakness of the Void-Beast's form",
+        "Where to find the Sun's Tear"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_mother": {
+      "id": "npc_mother",
+      "name": "The Matriarch of the Void",
+      "role": "Antagonist/Force of Nature",
+      "current_scene": "void",
+      "persona": {
+        "voice": "Whispering, multi-layered, sounding like a chorus of dying stars",
+        "motives": [
+          "To consume all creation to end the 'pain' of existence",
+          "To merge with the blacksmith's hammer to become eternal"
+        ],
+        "fears": [
+          "Being outshone by a new sun",
+          "The memory of a world that remembers the light"
+        ],
+        "temperament": "Ethereal and predatory",
+        "speech_style": "Sibilant whispers that shift pitch, occasionally breaking into clear, sorrowful commands"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 20,
+        "hostility": 50,
+        "respect": 0
+      },
+      "knows": [
+        "The exact coordinates of the final star component",
+        "The blacksmith's deepest regret"
+      ],
+      "can_reveal": [
+        "The location of the Void-Beast's weak point",
+        "How to channel the starlight without burning out"
+      ],
+      "triggers": [],
+      "status": "active"
+    }
+  },
+  "items": {
+    "item_dying_hammer": {
+      "id": "item_dying_hammer",
+      "name": "The Cracked Celestial Hammer",
+      "description": "A massive tool forged from unknown metals, now humming with a fading, rhythmic pulse. Its head is fractured, leaking faint blue stardust onto the floor.",
+      "category": "artifact"
+    },
+    "item_star_dust": {
+      "id": "item_star_dust",
+      "name": "Star-Dust Essence",
+      "description": "Fine, glowing particles that feel warm to the touch. When held, they show visions of the sky before it cracked.",
+      "category": "consumable"
+    },
+    "item_void_shield": {
+      "id": "item_void_shield",
+      "name": "Shard of the First Wall",
+      "description": "A jagged piece of obsidian that doesn't reflect light but absorbs it. It hums when near the Void-Beast.",
+      "category": "tool"
+    },
+    "item_sun_tear": {
+      "id": "item_sun_tear",
+      "name": "The Sun's Tear",
+      "description": "A single, perfect droplet of liquid light that never evaporates. It is said to be the last remnant of the original sun.",
+      "category": "artifact"
+    }
+  },
+  "skills": {
+    "skill_star_smith": {
+      "id": "skill_star_smith",
+      "name": "Star-Smithing",
+      "description": "Allows the blacksmith to channel starlight into the hammer, stabilizing it temporarily. Requires holding the Cracked Celestial Hammer.",
+      "category": "general"
+    },
+    "skill_void_walk": {
+      "id": "skill_void_walk",
+      "name": "Void-Walking",
+      "description": "A defensive ability that lets the blacksmith phase through cracks in reality, bypassing physical obstacles and dodging attacks.",
+      "category": "general"
+    },
+    "skill_luminous_focus": {
+      "id": "skill_luminous_focus",
+      "name": "Luminous Focus",
+      "description": "Increases the efficiency of starlight absorption, allowing the blacksmith to gather components faster without burning out their own eyes.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1_gathering",
+    "current_scene": "scene_workshop_void",
+    "inventory": [],
+    "skills": [
+      "skill_star_smith",
+      "skill_void_walk",
+      "skill_luminous_focus"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

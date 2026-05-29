@@ -22,6 +22,7 @@ The JSON must match this exact schema:
     "inventory_remove": ["item_ids"],
     "clues_add": ["clue_ids"],
     "skills_add": ["skill_ids"],
+    "used_skills": ["skill_ids that were actively used this turn"],
     "relationship_changes": [
       {"npc_id": "npc_id", "trust": delta, "fear": delta, "hostility": delta, "respect": delta}
     ],
@@ -74,3 +75,5 @@ ANTI-DRIFT RULES — MANDATORY:
 13. next_options must be actions the player could actually take given their current scene and available NPCs.
 14. If the player tries something impossible, describe the failure in narration, do not apply changes.
 15. Maintain continuity with RECENT HISTORY — reference prior events naturally.
+16. When the player fulfills an objective's requirements (all required flags set and clues obtained), include that objective's id in state_delta.complete_objectives. Do not wait — complete it the same turn the requirements are met.
+17. If the player uses a skill they possess, include that skill's id in state_delta.used_skills. Skills are powerful tools — using them should meaningfully affect outcomes.

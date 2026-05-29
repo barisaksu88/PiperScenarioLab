@@ -1,0 +1,384 @@
+{
+  "metadata": {
+    "title": "Starless Dawn",
+    "description": "A lone pilot discovers an ancient signal from a dead world, igniting a war between the Silent Armada and the forgotten gods of the cosmos. As they navigate treacherous nebulae and ancient AI guardians, they must decide whether to awaken a power that could save them or destroy the galaxy forever.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1": {
+      "id": "act_1",
+      "name": "The Waking Drifter",
+      "description": "Protagonist awakens in a salvage ship and investigates the immediate environment.",
+      "scenes": {
+        "scene_1_1": {
+          "id": "scene_1_1",
+          "name": "Cockpit Awakening",
+          "description": "Protagonist wakes up disoriented in the cramped cockpit.",
+          "connected_scenes": [
+            "scene_1_2"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": []
+        },
+        "scene_1_2": {
+          "id": "scene_1_2",
+          "name": "Scanning the Void",
+          "description": "Using the holographic map, the protagonist detects a nearby anomaly.",
+          "connected_scenes": [
+            "scene_1_1",
+            "scene_2_1"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": [
+            "clue_anomaly_signal"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_1_1": {
+          "id": "obj_1_1",
+          "description": "Identify the pulsing device found in the cockpit.",
+          "status": "active",
+          "required_flags": [
+            "flag_device_identified"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_device_identified"
+      ],
+      "ending_narration": ""
+    },
+    "act_2": {
+      "id": "act_2",
+      "name": "The Deep Dive",
+      "description": "Protagonist travels to the anomaly source and encounters the alien remnants.",
+      "scenes": {
+        "scene_2_1": {
+          "id": "scene_2_1",
+          "name": "Approaching the Anomaly",
+          "description": "The ship drifts closer to the mysterious energy signature.",
+          "connected_scenes": [
+            "scene_1_2",
+            "scene_2_2"
+          ],
+          "npcs_present": [
+            "npc_02"
+          ],
+          "items_present": [
+            "item_02"
+          ],
+          "clues_present": []
+        },
+        "scene_2_2": {
+          "id": "scene_2_2",
+          "name": "Salvaging the Core",
+          "description": "Protagonist retrieves a data core from the derelict vessel near the anomaly.",
+          "connected_scenes": [
+            "scene_2_1",
+            "scene_3_1"
+          ],
+          "npcs_present": [
+            "npc_03"
+          ],
+          "items_present": [
+            "item_03",
+            "item_04"
+          ],
+          "clues_present": [
+            "clue_core_data"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_2_1": {
+          "id": "obj_2_1",
+          "description": "Secure the data core from the derelict ship.",
+          "status": "active",
+          "required_flags": [
+            "flag_core_secured"
+          ],
+          "required_clues": [
+            "clue_core_data"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_core_secured"
+      ],
+      "ending_narration": ""
+    },
+    "act_3": {
+      "id": "act_3",
+      "name": "The Sacrifice",
+      "description": "Protagonist realizes the only way to reignite the sun is to sacrifice their ship.",
+      "scenes": {
+        "scene_3_1": {
+          "id": "scene_3_1",
+          "name": "Understanding the Mechanism",
+          "description": "The data core reveals the truth about the dying star and the required sacrifice.",
+          "connected_scenes": [
+            "scene_2_2",
+            "scene_3_2"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_01",
+            "item_03"
+          ],
+          "clues_present": [
+            "clue_sacrifice_protocol"
+          ]
+        },
+        "scene_3_2": {
+          "id": "scene_3_2",
+          "name": "Ignition",
+          "description": "Protagonist channels their ship's energy into the core, transforming it into a beacon.",
+          "connected_scenes": [
+            "scene_3_1"
+          ],
+          "npcs_present": [
+            "npc_02",
+            "npc_03"
+          ],
+          "items_present": [
+            "item_04"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_3_1": {
+          "id": "obj_3_1",
+          "description": "Initiate the sacrificial protocol to reignite the sun.",
+          "status": "active",
+          "required_flags": [
+            "flag_sacrifice_initiated"
+          ],
+          "required_clues": [
+            "clue_sacrifice_protocol"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_sacrifice_initiated"
+      ],
+      "ending_narration": "The freighter dissolved into a brilliant pillar of light, piercing the eternal darkness and waking the dormant suns. As the galaxy flooded with warmth and hope, the crew's sacrifice became a legend of renewal that echoed through the stars."
+    }
+  },
+  "npcs": {
+    "npc_01": {
+      "id": "npc_01",
+      "name": "Commander Vex",
+      "role": "Former Fleet Admiral",
+      "current_scene": "Drifting in the Void, communicating via encrypted burst transmission",
+      "persona": {
+        "voice": "Sharp, authoritative, weary",
+        "motives": [
+          "Restore order to the dying galaxy",
+          "Avenge the lost fleet",
+          "Find the anomaly's origin"
+        ],
+        "fears": [
+          "Total extinction",
+          "Being forgotten",
+          "Making a second mistake like the last war"
+        ],
+        "temperament": "Stoic, calculating, burdened",
+        "speech_style": "Formal, clipped, uses military jargon, rarely emotional"
+      },
+      "relationship_to_player": {
+        "trust": 20,
+        "fear": 10,
+        "hostility": 30,
+        "respect": 40
+      },
+      "knows": [
+        "The pulsing device is a fragment of the Original Core",
+        "The suns can be reignited by a massive energy spike",
+        "Vex's flagship 'Aegis' is nearby, but damaged"
+      ],
+      "can_reveal": [
+        "The location of the 'Aegis' salvage",
+        "The code to decrypt Vex's secure logs",
+        "Vex's plan to use the player as a conduit"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_02": {
+      "id": "npc_02",
+      "name": "Elara",
+      "role": "Scavenger Guide",
+      "current_scene": "Hiding on a space station, observing the player's ship",
+      "persona": {
+        "voice": "Soft, curious, cautious",
+        "motives": [
+          "Survive the void",
+          "Learn the secrets of the old world",
+          "Help the player without getting caught"
+        ],
+        "fears": [
+          "The 'Silencers' hunting her",
+          "Being stranded forever",
+          "The pulsing device waking something ancient"
+        ],
+        "temperament": "Neurotic, clever, adaptable",
+        "speech_style": "Colloquial, slang-heavy, uses metaphors, often pauses to think"
+      },
+      "relationship_to_player": {
+        "trust": 45,
+        "fear": 30,
+        "hostility": 10,
+        "respect": 25
+      },
+      "knows": [
+        "The path to the nearest nebula",
+        "How to hide from the Silencers' sensors",
+        "The history of the starless dawn era"
+      ],
+      "can_reveal": [
+        "A safe route through the asteroid belt",
+        "The Silencers' patrol schedule",
+        "Elara's hidden stash of supplies"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_03": {
+      "id": "npc_03",
+      "name": "The Silencer",
+      "role": "Void Hunter",
+      "current_scene": "Patrolling the drift, cloaked in stealth",
+      "persona": {
+        "voice": "Mechanical, distorted, echoing",
+        "motives": [
+          "Harvest energy from anomalies",
+          "Prevent the galaxy from waking up",
+          "Collect souls of the doomed"
+        ],
+        "fears": [
+          "The pulsing device's resonance",
+          "Being exposed",
+          "The suns burning too hot"
+        ],
+        "temperament": "Predatory, patient, ruthless",
+        "speech_style": "Monotone, layered, uses technical terms like 'harvesting' and 'consuming'"
+      },
+      "relationship_to_player": {
+        "trust": 5,
+        "fear": 15,
+        "hostility": 95,
+        "respect": 10
+      },
+      "knows": [
+        "The player's ship signature",
+        "The exact power output needed to reignite the sun",
+        "A weakness in the ship's shields if overloaded"
+      ],
+      "can_reveal": [
+        "A trap for the player in a dark nebula",
+        "The Silencer's base coordinates",
+        "A way to overload the ship's reactor"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_01": {
+      "id": "item_01",
+      "name": "The Pulsing Device",
+      "description": "A small, warm sphere that hums with a low, rhythmic vibration. Its surface shifts between dark blue and gold as it reacts to nearby energy fields. It feels like a heartbeat.",
+      "category": "artifact"
+    },
+    "item_02": {
+      "id": "item_02",
+      "name": "Stabilized Core Fragment",
+      "description": "A jagged shard of crystalline metal that emits a faint glow. It was once part of a larger engine, now cracked and unstable. Requires careful handling to avoid overheating.",
+      "category": "artifact"
+    },
+    "item_03": {
+      "id": "item_03",
+      "name": "Emergency Ration Pack",
+      "description": "A sealed container of nutrient paste and water tablets. The packaging is faded, but the contents remain fresh and surprisingly nutritious.",
+      "category": "consumable"
+    },
+    "item_04": {
+      "id": "item_04",
+      "name": "Holographic Map",
+      "description": "A flickering, cracked screen displaying a rough star map. The lines are faint, but the pulsing device seems to synchronize with its faint glow, highlighting a path.",
+      "category": "tool"
+    }
+  },
+  "skills": {
+    "skill_01": {
+      "id": "skill_01",
+      "name": "Void Navigation",
+      "description": "Enhances the ability to read faint energy signatures and navigate through unstable drift zones. Allows the player to detect hidden hazards and safe paths in the darkness.",
+      "category": "general"
+    },
+    "skill_02": {
+      "id": "skill_02",
+      "name": "Energy Resonance",
+      "description": "Allows the player to tune their equipment to match the frequency of the pulsing device. Increases the efficiency of repairs and power generation.",
+      "category": "general"
+    },
+    "skill_03": {
+      "id": "skill_03",
+      "name": "Tactical Evasion",
+      "description": "Improves reflexes and situational awareness in combat. Helps the player dodge attacks and position the ship for optimal defense.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1",
+    "current_scene": "scene_1_1",
+    "inventory": [],
+    "skills": [
+      "skill_01",
+      "skill_02",
+      "skill_03"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

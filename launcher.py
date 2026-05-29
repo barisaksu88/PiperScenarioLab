@@ -189,7 +189,7 @@ class LlamaServerManager:
     def _build_command(self) -> list[str]:
         exe, model = self._resolve()
         bind_host = os.environ.get("SCENARIO_LLAMA_BIND_HOST") or self.cfg.piper_config.get("LLAMA_SERVER_BIND_HOST") or "127.0.0.1"
-        ctx_size = os.environ.get("SCENARIO_CTX_SIZE") or self.cfg.piper_config.get("CONTEXT_SIZE") or 4096
+        ctx_size = os.environ.get("SCENARIO_CTX_SIZE") or self.cfg.piper_config.get("CONTEXT_SIZE") or 32768
         gpu_layers = os.environ.get("SCENARIO_GPU_LAYERS") or self.cfg.piper_config.get("LLAMA_SERVER_GPU_LAYERS") or 0
         reasoning_budget = os.environ.get("SCENARIO_REASONING_BUDGET") or self.cfg.piper_config.get("LLAMA_SERVER_REASONING_BUDGET")
         mmproj = os.environ.get("SCENARIO_MMPROJ_PATH") or self.cfg.piper_config.get("MMPROJ_PATH")
@@ -336,6 +336,7 @@ def main() -> int:
     url = backend_url + "/"
     logger.info("Window startup target: %s", url)
     window_started = False
+    window_closed = False
     if cfg.scenario_window_enabled:
         try:
             import webview  # type: ignore
@@ -344,6 +345,7 @@ def main() -> int:
             window_started = True
             webview.create_window("Piper Scenario Lab", url, width=1400, height=900)
             webview.start(debug=False)
+            window_closed = True
         except Exception as exc:
             logger.warning("pywebview unavailable, falling back to browser: %s", exc)
     if not window_started:
@@ -351,8 +353,12 @@ def main() -> int:
         logger.info("Browser fallback opened: %s", url)
 
     try:
-        while thread.is_alive():
-            time.sleep(0.5)
+        if window_started:
+            while thread.is_alive() and not window_closed:
+                time.sleep(0.5)
+        else:
+            while thread.is_alive():
+                time.sleep(0.5)
     except KeyboardInterrupt:
         logger.info("Shutdown requested")
     finally:

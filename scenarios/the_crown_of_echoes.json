@@ -1,0 +1,409 @@
+{
+  "metadata": {
+    "title": "The Crown of Echoes",
+    "description": "A fallen king's spirit awakens within a mortal vessel to reclaim a shattered kingdom, only to discover the crown holds a darker power than expected.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1": {
+      "id": "act_1",
+      "name": "The Awakening",
+      "description": "The hero awakens in the obsidian throne room and discovers the first signs of the shadow's presence.",
+      "scenes": {
+        "scene_1_1": {
+          "id": "scene_1_1",
+          "name": "Obsidian Awakening",
+          "description": "You wake up in a cold throne room, feeling the ancient magic pulse within your chest.",
+          "connected_scenes": [
+            "scene_1_2"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": []
+        },
+        "scene_1_2": {
+          "id": "scene_1_2",
+          "name": "Distant Screams",
+          "description": "Hearing screams, you find a wounded guard and a map of the fractured realms.",
+          "connected_scenes": [
+            "scene_1_1",
+            "scene_2_1",
+            "scene_2_2"
+          ],
+          "npcs_present": [
+            "npc_02"
+          ],
+          "items_present": [
+            "item_02"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_1_1": {
+          "id": "obj_1_1",
+          "description": "Secure the map of the fractured realms.",
+          "status": "active",
+          "required_flags": [
+            "map_secured"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "map_secured"
+      ],
+      "ending_narration": ""
+    },
+    "act_2": {
+      "id": "act_2",
+      "name": "The Shadow's Grip",
+      "description": "You travel through fractured realms to gather allies and items to counter the shadow's influence.",
+      "scenes": {
+        "scene_2_1": {
+          "id": "scene_2_1",
+          "name": "The Forest of Whispers",
+          "description": "You meet a mystic who reveals the shadow's weakness requires the crown's power.",
+          "connected_scenes": [
+            "scene_1_2",
+            "scene_2_2"
+          ],
+          "npcs_present": [
+            "npc_03"
+          ],
+          "items_present": [
+            "item_03"
+          ],
+          "clues_present": [
+            "clue_1"
+          ]
+        },
+        "scene_2_2": {
+          "id": "scene_2_2",
+          "name": "The Ruined Spire",
+          "description": "A battle ensues where you recover a key artifact using the map from the previous act.",
+          "connected_scenes": [
+            "scene_2_1",
+            "scene_1_2",
+            "scene_3_1"
+          ],
+          "npcs_present": [
+            "npc_04"
+          ],
+          "items_present": [
+            "item_04"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_2_1": {
+          "id": "obj_2_1",
+          "description": "Defeat the shadow lieutenant in the spire.",
+          "status": "active",
+          "required_flags": [
+            "lieutenant_defeated"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "lieutenant_defeated"
+      ],
+      "ending_narration": ""
+    },
+    "act_3": {
+      "id": "act_3",
+      "name": "The Final Ascension",
+      "description": "Return to the throne room to unite the realms and master the crown's ancient magic.",
+      "scenes": {
+        "scene_3_1": {
+          "id": "scene_3_1",
+          "name": "Reunion of Realms",
+          "description": "You bring the allies together, synchronizing the fractured magic with the crown.",
+          "connected_scenes": [
+            "scene_2_2",
+            "scene_3_2"
+          ],
+          "npcs_present": [
+            "npc_01",
+            "npc_02",
+            "npc_03"
+          ],
+          "items_present": [
+            "item_01",
+            "item_02",
+            "item_03",
+            "item_04"
+          ],
+          "clues_present": [
+            "clue_1"
+          ]
+        },
+        "scene_3_2": {
+          "id": "scene_3_2",
+          "name": "The Shadow Confrontation",
+          "description": "The usurper is consumed by the crown's light, restoring balance to the realm.",
+          "connected_scenes": [
+            "scene_3_1"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_3_1": {
+          "id": "obj_3_1",
+          "description": "Master the crown's magic and defeat the shadow usurper.",
+          "status": "active",
+          "required_flags": [
+            "crown_mastered"
+          ],
+          "required_clues": [
+            "clue_1"
+          ]
+        }
+      },
+      "completion_flags": [
+        "crown_mastered"
+      ],
+      "ending_narration": "The realm is restored to balance, the shadow usurper consumed by the crown's light, and you ascend as the new guardian of the eternal cycle."
+    }
+  },
+  "npcs": {
+    "npc_01": {
+      "id": "npc_01",
+      "name": "Lady Elara",
+      "role": "Exiled Healer",
+      "current_scene": "The Obsidian Throne Room",
+      "persona": {
+        "voice": "Soft but trembling, laced with melancholy",
+        "motives": [
+          "Restore her family's honor",
+          "Find the source of the shadow"
+        ],
+        "fears": [
+          "Being forgotten again",
+          "The shadow consuming the last of the light"
+        ],
+        "temperament": "Cautious and empathetic",
+        "speech_style": "Metaphorical, poetic, often pauses to compose words"
+      },
+      "relationship_to_player": {
+        "trust": 5,
+        "fear": 10,
+        "hostility": 0,
+        "respect": 15
+      },
+      "knows": [
+        "The crown pulses only when pure intent is held",
+        "Lady Elara's father knew the usurper's weakness"
+      ],
+      "can_reveal": [
+        "The location of the First Sanctum",
+        "How to calm the crown's rage"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_02": {
+      "id": "npc_02",
+      "name": "General Varkas",
+      "role": "Shadowed Commander",
+      "current_scene": "The Broken Bridge",
+      "persona": {
+        "voice": "Raspy and commanding, rarely breaks stride",
+        "motives": [
+          "Survival at all costs",
+          "Prove his worth against the usurper"
+        ],
+        "fears": [
+          "Failure in battle",
+          "Being labeled traitor by the usurper's allies"
+        ],
+        "temperament": "Stubborn and pragmatic",
+        "speech_style": "Direct, clipped sentences, uses military jargon"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 5,
+        "hostility": 10,
+        "respect": 10
+      },
+      "knows": [
+        "The shadow moves faster in the rain",
+        "A secret passage beneath the throne"
+      ],
+      "can_reveal": [
+        "Tactics to bypass the usurper's guards",
+        "The true location of the fractured realms"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_03": {
+      "id": "npc_03",
+      "name": "Oracle Morn",
+      "role": "Ancient Seer",
+      "current_scene": "The Whispering Grove",
+      "persona": {
+        "voice": "Echoing and multi-layered, sounding like many voices",
+        "motives": [
+          "Preserve the cycle of time",
+          "Ensure the crown is not misused"
+        ],
+        "fears": [
+          "The realm dissolving into chaos",
+          "The crown's power corrupting the bearer"
+        ],
+        "temperament": "Mysterious and detached",
+        "speech_style": "Cryptic, riddles, speaks in past and future tenses interchangeably"
+      },
+      "relationship_to_player": {
+        "trust": 10,
+        "fear": 0,
+        "hostility": 5,
+        "respect": 20
+      },
+      "knows": [
+        "The usurper is a reflection of the hero's doubt",
+        "The crown requires sacrifice to fully awaken"
+      ],
+      "can_reveal": [
+        "The true ending condition",
+        "The name of the usurper's true form"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_04": {
+      "id": "npc_04",
+      "name": "Rook",
+      "role": "Scavenger",
+      "current_scene": "The Rusty Ruins",
+      "persona": {
+        "voice": "Hoarse and quick, with a constant grin",
+        "motives": [
+          "Find valuable loot",
+          "Escape the crumbling kingdom"
+        ],
+        "fears": [
+          "Running out of supplies",
+          "The dark beasts of the ruins"
+        ],
+        "temperament": "Cynical and opportunistic",
+        "speech_style": "Colloquial, slang-heavy, uses humor to deflect danger"
+      },
+      "relationship_to_player": {
+        "trust": 5,
+        "fear": 15,
+        "hostility": 5,
+        "respect": 5
+      },
+      "knows": [
+        "Where the shadow hides its weapons",
+        "How to trade with the ruins' inhabitants"
+      ],
+      "can_reveal": [
+        "A side quest involving a lost artifact",
+        "The location of the Scavenger's Guild"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_01": {
+      "id": "item_01",
+      "name": "Crown Shard",
+      "description": "A jagged piece of the Crown of Echoes that hums with residual power. It warms the hand when held near the usurper.",
+      "category": "artifact"
+    },
+    "item_02": {
+      "id": "item_02",
+      "name": "Shadow-Steel Dagger",
+      "description": "A blade forged from metal stolen from the usurper's armor. It glows faintly red when near shadow energy.",
+      "category": "tool"
+    },
+    "item_03": {
+      "id": "item_03",
+      "name": "Elixir of Clarity",
+      "description": "A vial of glowing blue liquid. Drinking it temporarily removes confusion and strengthens the connection to the crown's magic.",
+      "category": "consumable"
+    },
+    "item_04": {
+      "id": "item_04",
+      "name": "Rust-Resistant Rations",
+      "description": "Hardtack and dried meat wrapped in oilskin. Essential for surviving long treks through the decaying realms.",
+      "category": "general"
+    }
+  },
+  "skills": {
+    "skill_01": {
+      "id": "skill_01",
+      "name": "Echo Sense",
+      "description": "Allows the player to detect hidden enemies or magical disturbances by listening to the 'echoes' left in the air.",
+      "category": "general"
+    },
+    "skill_02": {
+      "id": "skill_02",
+      "name": "Crown Resonance",
+      "description": "Temporarily boosts the player's magical abilities, allowing them to manipulate the crown's energy more effectively.",
+      "category": "general"
+    },
+    "skill_03": {
+      "id": "skill_03",
+      "name": "Shadow Step",
+      "description": "Enables the player to briefly phase through shadows, bypassing obstacles or escaping danger zones.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1",
+    "current_scene": "scene_1_1",
+    "inventory": [],
+    "skills": [
+      "skill_01",
+      "skill_02",
+      "skill_03"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

@@ -2,6 +2,7 @@
 
 import json
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -73,6 +74,41 @@ class Storage:
             return []
         entries = json.loads(log_path.read_text(encoding="utf-8"))
         return [SessionLogEntry.model_validate(e) for e in entries]
+
+    def list_sessions(self) -> List[Dict[str, Any]]:
+        """Return list of saved sessions with metadata."""
+        sessions = []
+        if self.sessions_dir.exists():
+            for f in sorted(self.sessions_dir.iterdir()):
+                if f.suffix == ".json" and not f.name.endswith("_log.json"):
+                    # Skip harness / test sessions
+                    if f.name.startswith("harness_"):
+                        continue
+                    try:
+                        data = json.loads(f.read_text(encoding="utf-8"))
+                        sessions.append({
+                            "session_id": data.get("session_id", f.stem),
+                            "scenario_id": data.get("scenario_id"),
+                            "turn_number": data.get("turn_number", 0),
+                            "scenario_title": (
+                                data.get("scenario", {}).get("metadata", {}).get("title", "Unknown")
+                                if isinstance(data.get("scenario"), dict)
+                                else "Unknown"
+                            ),
+                            "updated_at": datetime.fromtimestamp(f.stat().st_mtime, tz=timezone.utc).isoformat(),
+                        })
+                    except Exception:
+                        sessions.append({"session_id": f.stem, "scenario_id": None, "turn_number": 0, "scenario_title": "Unknown", "updated_at": ""})
+        return sessions
+
+    def delete_session(self, session_id: str) -> bool:
+        """Delete a session and its log. Returns True if anything was deleted."""
+        deleted = False
+        for path in [self.sessions_dir / f"{session_id}.json", self.sessions_dir / f"{session_id}_log.json"]:
+            if path.exists():
+                path.unlink()
+                deleted = True
+        return deleted
 
     def generate_session_id(self) -> str:
         """Generate unique session ID."""

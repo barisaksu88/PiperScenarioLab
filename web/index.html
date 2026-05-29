@@ -9,15 +9,22 @@
 <body>
   <div id="app">
     <header>
-      <span>PiperScenarioLab</span>
-      <span id="mode-badge">Mock Mode</span>
+      <div class="brand">
+        <span class="brand-title">PiperScenarioLab</span>
+        <span id="mode-badge">Mock Mode</span>
+      </div>
+      <div class="header-hint">Chronological timeline view</div>
+      <div class="header-actions">
+        <button class="header-btn" id="btn-new">New Scenario</button>
+        <button class="header-btn" id="btn-continue">Continue</button>
+        <button class="header-btn" id="btn-save">Save</button>
+      </div>
     </header>
     <div class="main-container">
-      <div class="left-panel">
-        <div id="narration-log"></div>
-        <div id="dialogue-section"></div>
-      </div>
-      <div class="right-sidebar">
+      <main class="left-panel">
+        <div id="timeline" class="timeline"></div>
+      </main>
+      <aside class="right-sidebar">
         <div class="sidebar-section">
           <h3>Scenario</h3>
           <div id="scenario-info"></div>
@@ -54,14 +61,102 @@
           <h3>Flags</h3>
           <div id="flags"></div>
         </div>
-      </div>
+      </aside>
     </div>
     <div class="bottom-bar">
-      <input type="text" id="user-input" placeholder="What do you do?" autocomplete="off">
-      <button id="send-btn">Send</button>
       <div id="options"></div>
+      <div class="input-row">
+        <input type="text" id="user-input" placeholder="What do you do?" autocomplete="off">
+        <button id="send-btn">Send</button>
+      </div>
     </div>
   </div>
+
+  <!-- New Scenario Modal -->
+  <div class="modal-overlay hidden" id="modal-new">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Create New Scenario</h2>
+        <button class="modal-close" data-close="modal-new">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>Title (optional)
+          <input type="text" id="new-title" placeholder="Leave blank for AI-generated title">
+        </label>
+        <label>Genre
+          <select id="new-genre">
+            <option value="fantasy">Fantasy</option>
+            <option value="sci-fi">Sci-Fi</option>
+            <option value="horror">Horror</option>
+            <option value="mystery">Mystery</option>
+            <option value="adventure">Adventure</option>
+            <option value="cyberpunk">Cyberpunk</option>
+          </select>
+        </label>
+        <label>Length
+          <select id="new-length">
+            <option value="short">Short (~15 min)</option>
+            <option value="medium" selected>Medium (~30 min)</option>
+            <option value="long">Long (~60 min)</option>
+          </select>
+        </label>
+        <label>Difficulty
+          <select id="new-difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <label>Tone
+          <select id="new-tone">
+            <option value="mysterious" selected>Mysterious</option>
+            <option value="dark">Dark</option>
+            <option value="whimsical">Whimsical</option>
+            <option value="tense">Tense</option>
+            <option value="epic">Epic</option>
+            <option value="noir">Noir</option>
+          </select>
+        </label>
+        <label>Theme / Premise
+          <textarea id="new-theme" placeholder="e.g. A village under a curse, a spaceship adrift, a detective hunting a killer..."></textarea>
+        </label>
+      </div>
+      <div class="modal-spinner" id="generate-spinner">
+        <div class="spinner"></div>
+        <span>Generating scenario, this may take a minute...</span>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn" data-close="modal-new">Cancel</button>
+        <button class="modal-btn primary" id="btn-generate">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Continue / Load Modal -->
+  <div class="modal-overlay hidden" id="modal-continue">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Continue Session</h2>
+        <button class="modal-close" data-close="modal-continue">&times;</button>
+      </div>
+      <div class="modal-body" id="session-list">
+        <div class="empty-msg">No saved sessions yet.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn" data-close="modal-continue">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ending Overlay -->
+  <div class="ending-overlay hidden" id="ending-overlay">
+    <div class="ending-card">
+      <h2>The End</h2>
+      <p id="ending-text"></p>
+      <button class="modal-btn primary" id="btn-ending-close">Back to Menu</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

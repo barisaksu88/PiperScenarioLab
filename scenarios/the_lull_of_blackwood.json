@@ -1,0 +1,371 @@
+{
+  "metadata": {
+    "title": "The Lull of Blackwood",
+    "description": "A quiet village has been frozen in time by a mysterious, rhythmic slumber. You are the first to wake, tasked with discovering the source of the curse before the silence claims the night.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1_discovery": {
+      "id": "act_1_discovery",
+      "name": "The Awakening",
+      "description": "You wake up in the silent courtyard and begin to assess the situation.",
+      "scenes": {
+        "scene_1_courtyard": {
+          "id": "scene_1_courtyard",
+          "name": "The Silent Courtyard",
+          "description": "You open your eyes to a cobblestone yard. Cobwebs hang from every stone. Villagers stand motionless in their beds nearby.",
+          "connected_scenes": [],
+          "npcs_present": [
+            "npc_elder_mara"
+          ],
+          "items_present": [
+            "item_old_candle"
+          ],
+          "clues_present": [
+            "clue_silent_world"
+          ]
+        },
+        "scene_2_kitchen": {
+          "id": "scene_2_kitchen",
+          "name": "The Empty Kitchen",
+          "description": "You wander into the village kitchen. The table is set for dinner, but no one is there. A faint smell of rot lingers.",
+          "connected_scenes": [
+            "scene_1_courtyard"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_dry_rations"
+          ],
+          "clues_present": [
+            "clue_forgotten_meal"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_1_examine_courtyard": {
+          "id": "obj_1_examine_courtyard",
+          "description": "Examine the courtyard for signs of disturbance.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": [
+            "clue_silent_world"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_courtyard_explored"
+      ],
+      "ending_narration": ""
+    },
+    "act_2_investigation": {
+      "id": "act_2_investigation",
+      "name": "The Forgotten Pact",
+      "description": "You track down the source of the sleep, discovering an ancient altar and a mysterious NPC.",
+      "scenes": {
+        "scene_3_altar": {
+          "id": "scene_3_altar",
+          "name": "The Stone Altar",
+          "description": "Deep in the woods, you find a circular stone altar covered in moss. A glowing flower sits in the center.",
+          "connected_scenes": [
+            "scene_2_kitchen"
+          ],
+          "npcs_present": [
+            "npc_kaelen"
+          ],
+          "items_present": [
+            "item_cursed_flower"
+          ],
+          "clues_present": [
+            "clue_ancient_pact"
+          ]
+        },
+        "scene_4_basement": {
+          "id": "scene_4_basement",
+          "name": "The Damp Basement",
+          "description": "You descend into the old manor basement. A rusted key lies on a dusty table, and a faint hum vibrates through the floor.",
+          "connected_scenes": [
+            "scene_3_altar"
+          ],
+          "npcs_present": [
+            "npc_silva"
+          ],
+          "items_present": [
+            "item_rusted_key"
+          ],
+          "clues_present": [
+            "clue_subterranean_chamber"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_2_retrieve_key": {
+          "id": "obj_2_retrieve_key",
+          "description": "Locate and retrieve the rusted key from the basement.",
+          "status": "active",
+          "required_flags": [
+            "flag_basement_accessed"
+          ],
+          "required_clues": [
+            "clue_subterranean_chamber"
+          ]
+        },
+        "obj_3_identify_flower": {
+          "id": "obj_3_identify_flower",
+          "description": "Identify the cursed flower at the altar.",
+          "status": "active",
+          "required_flags": [
+            "flag_altar_discovered"
+          ],
+          "required_clues": [
+            "clue_ancient_pact"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_altar_examined",
+        "flag_basement_searched"
+      ],
+      "ending_narration": ""
+    },
+    "act_3_restoration": {
+      "id": "act_3_restoration",
+      "name": "The Sacrifice",
+      "description": "You perform the final ritual to restore the moonlight and wake the village.",
+      "scenes": {
+        "scene_5_ritual_grounds": {
+          "id": "scene_5_ritual_grounds",
+          "name": "The Ritual Grounds",
+          "description": "You return to the altar with the key and flower. The sky above darkens as the moonlight begins to flow back into the world.",
+          "connected_scenes": [
+            "scene_4_basement"
+          ],
+          "npcs_present": [
+            "npc_elder_mara",
+            "npc_kaelen",
+            "npc_silva"
+          ],
+          "items_present": [
+            "item_cursed_flower",
+            "item_rusted_key"
+          ],
+          "clues_present": [
+            "clue_final_ritual"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_3_perform_ritual": {
+          "id": "obj_3_perform_ritual",
+          "description": "Combine the key and flower at the altar to break the curse.",
+          "status": "active",
+          "required_flags": [
+            "flag_altar_examined",
+            "flag_basement_searched"
+          ],
+          "required_clues": [
+            "clue_final_ritual"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_ritual_complete"
+      ],
+      "ending_narration": "As you place the key into the flower's base, the dark sky above shudders and breaks apart. Golden light pours down like rain, washing over the motionless figures. One by one, the villagers blink awake, stretching and smiling as the sun finally rises over the restored, living world."
+    }
+  },
+  "npcs": {
+    "npc_elder_mara": {
+      "id": "npc_elder_mara",
+      "name": "Elder Mara",
+      "role": "Village Matriarch",
+      "current_scene": "courtyard_center",
+      "persona": {
+        "voice": "Soft, trembling, ancient",
+        "motives": [
+          "preserve the village's peace",
+          "hide the truth of the pact"
+        ],
+        "fears": [
+          "losing her memories",
+          "the sacrifice being demanded"
+        ],
+        "temperament": "timid and weary",
+        "speech_style": "hushed and rambling"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 1,
+        "hostility": 0,
+        "respect": 2
+      },
+      "knows": [
+        "the pact's origin",
+        "where the stolen moonlight was taken",
+        "the cost of restoration"
+      ],
+      "can_reveal": [
+        "the hidden shrine location",
+        "the name of the thief"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_kaelen": {
+      "id": "npc_kaelen",
+      "name": "Kaelen",
+      "role": "Lost Traveler",
+      "current_scene": "courtyard_gate",
+      "persona": {
+        "voice": "Sharp, alert, skeptical",
+        "motives": [
+          "find a way out",
+          "survive the night"
+        ],
+        "fears": [
+          "being trapped",
+          "monsters in the woods"
+        ],
+        "temperament": "cynical and watchful",
+        "speech_style": "direct and clipped"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 1,
+        "hostility": 1,
+        "respect": 0
+      },
+      "knows": [
+        "road conditions before",
+        "rumors of the moonlight",
+        "a shortcut to the shrine"
+      ],
+      "can_reveal": [
+        "how to pass the gate",
+        "what the villagers ate last"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_silva": {
+      "id": "npc_silva",
+      "name": "Silva",
+      "role": "The Warden",
+      "current_scene": "courtyard_wall",
+      "persona": {
+        "voice": "Melodic, echoing, detached",
+        "motives": [
+          "enforce the lull",
+          "maintain the balance"
+        ],
+        "fears": [
+          "breaking the pact",
+          "chaos returning"
+        ],
+        "temperament": "serene and unyielding",
+        "speech_style": "rhythmic and formal"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 2,
+        "respect": 1
+      },
+      "knows": [
+        "the thief's signature",
+        "the exact time the moon was stolen",
+        "how to break the silence"
+      ],
+      "can_reveal": [
+        "the thief's identity",
+        "the ritual to return the moon"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_cursed_flower": {
+      "id": "item_cursed_flower",
+      "name": "Cursed Moonflower",
+      "description": "A pale blue bloom that weeps silver tears. It was found near the shrine and seems to hum when held.",
+      "category": "artifact"
+    },
+    "item_old_candle": {
+      "id": "item_old_candle",
+      "name": "Old Candle",
+      "description": "A tallow candle carved with runes that glow faintly in the dark. It burns without smoke.",
+      "category": "tool"
+    },
+    "item_dry_rations": {
+      "id": "item_dry_rations",
+      "name": "Dry Rations",
+      "description": "Hardtack and dried meat. Not much food, but enough to keep a traveler moving for a few days.",
+      "category": "consumable"
+    },
+    "item_rusted_key": {
+      "id": "item_rusted_key",
+      "name": "Rusted Key",
+      "description": "A heavy iron key with no obvious lock, yet it feels warm to the touch.",
+      "category": "general"
+    }
+  },
+  "skills": {
+    "skill_whisper_detect": {
+      "id": "skill_whisper_detect",
+      "name": "Whisper Detect",
+      "description": "Allows the user to hear faint sounds and words from creatures or objects that are otherwise silent.",
+      "category": "general"
+    },
+    "skill_shadow_step": {
+      "id": "skill_shadow_step",
+      "name": "Shadow Step",
+      "description": "Lets the user move quietly through low light, leaving no footprints behind.",
+      "category": "general"
+    },
+    "skill_pact_read": {
+      "id": "skill_pact_read",
+      "name": "Pact Read",
+      "description": "Reveals the hidden clauses and conditions of magical agreements or curses when touched.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1_discovery",
+    "current_scene": "scene_1_courtyard",
+    "inventory": [],
+    "skills": [
+      "skill_whisper_detect",
+      "skill_shadow_step",
+      "skill_pact_read"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

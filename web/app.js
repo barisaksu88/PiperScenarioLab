@@ -1,22 +1,14 @@
 /**
  * PiperScenarioLab - Frontend Application
- * Complete vanilla JS client for the scenario engine.
+ * Dark chronological feed for narration, dialogue, commentary, and options.
  */
 
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
-
-let currentSessionId = null;
 let isLoading = false;
 let currentTurnNumber = 0;
+let feedEntries = [];
+let hasScenario = false;
 
-// ---------------------------------------------------------------------------
-// DOM Elements
-// ---------------------------------------------------------------------------
-
-const narrationLogEl = document.getElementById('narration-log');
-const dialogueSectionEl = document.getElementById('dialogue-section');
+const timelineEl = document.getElementById('timeline');
 const scenarioInfoEl = document.getElementById('scenario-info');
 const currentActEl = document.getElementById('current-act');
 const currentSceneEl = document.getElementById('current-scene');
@@ -30,10 +22,6 @@ const userInputEl = document.getElementById('user-input');
 const sendBtnEl = document.getElementById('send-btn');
 const optionsEl = document.getElementById('options');
 const modeBadgeEl = document.getElementById('mode-badge');
-
-// ---------------------------------------------------------------------------
-// API Helpers
-// ---------------------------------------------------------------------------
 
 async function apiGet(path) {
   const res = await fetch(path);
@@ -57,271 +45,327 @@ async function apiPost(path, body) {
   return res.json();
 }
 
-// ---------------------------------------------------------------------------
-// Initialization
-// ---------------------------------------------------------------------------
-
 async function init() {
-  try {
-    // Fetch and display mode
-    const modeData = await apiGet('/api/mode').catch(() => ({ mode: 'mock' }));
-    if (modeData && modeData.mode) {
-      modeBadgeEl.textContent = modeData.mode === 'piper' ? 'Piper Mode' : 'Mock Mode';
-      modeBadgeEl.style.background = modeData.mode === 'piper' ? '#3498db' : '#27ae60';
-    }
-
-    // Fetch current state
-    const state = await apiGet('/api/state');
-    if (state && state.scenario) {
-      currentSessionId = null; // Will be set on first turn
-      currentTurnNumber = state.turn_number || 0;
-      renderSidebar(state);
-
-      // If we have a current scene description, show initial narration
-      if (state.current_scene && state.current_scene.description) {
-        renderNarration({
-          turn_number: 0,
-          timestamp: new Date().toISOString(),
-          narration: state.current_scene.description,
-        });
-      }
-
-      // Show available NPCs with greeting-style dialogue
-      if (state.active_npcs && state.active_npcs.length > 0) {
-        const greetings = state.active_npcs.map(npc => ({
-          speaker_id: npc.id,
-          speaker_name: npc.name,
-          role: npc.role || '',
-          tone: 'neutral',
-          text: `${npc.name} is here.`,
-        }));
-        renderDialogue(greetings);
-      }
-    }
-
-    // Render initial options
-    renderOptions([
-      'Look around.',
-      'Wait and observe.',
-      'Talk to someone nearby.',
-    ]);
-
-  } catch (err) {
-    console.error('Init error:', err);
-    narrationLogEl.innerHTML = `<div class="narration-entry"><div class="narration-text" style="color:#c0392b">Error loading state: ${escapeHtml(err.message)}</div></div>`;
-  }
-
   bindEvents();
-}
+  bindModals();
 
-// ---------------------------------------------------------------------------
-// Scenario Loading
-// ---------------------------------------------------------------------------
-
-async function loadScenario(scenarioId) {
   try {
-    setLoading(true);
-    const result = await apiPost('/api/scenario/new', { scenario_id: scenarioId });
-    if (result.success) {
-      currentSessionId = result.data.session_id;
-      // Clear the log
-      narrationLogEl.innerHTML = '';
-      dialogueSectionEl.innerHTML = '';
-      // Refresh state
-      const state = await apiGet('/api/state');
-      renderSidebar(state);
-      if (state.current_scene && state.current_scene.description) {
-        renderNarration({
-          turn_number: 0,
-          timestamp: new Date().toISOString(),
-          narration: `Scenario loaded: ${state.scenario.title}\n\n${state.current_scene.description}`,
-        });
-      }
-      renderOptions([
-        'Look around.',
-        'Wait and observe.',
-        'Talk to someone nearby.',
-      ]);
-    } else {
-      alert('Failed to load scenario: ' + (result.error || 'Unknown error'));
+    const modeData = await apiGet('/api/mode').catch(() => ({ mode: 'mock' }));
+    modeBadgeEl.textContent = modeData.mode === 'piper' ? 'Piper Mode' : 'Mock Mode';
+    modeBadgeEl.style.background = modeData.mode === 'piper' ? 'rgba(56, 189, 248, 0.16)' : 'rgba(34, 197, 94, 0.16)';
+
+    const state = await apiGet('/api/state');
+    hasScenario = true;
+    currentTurnNumber = state.turn_number || 0;
+    renderSidebar(state);
+    feedEntries = [];
+    if (state.current_scene && state.current_scene.description) {
+      appendFeedEntry({
+        kind: 'scene',
+        turn_number: 0,
+        timestamp: new Date().toISOString(),
+        title: 'Scene',
+        subtitle: state.current_scene.name || state.current_scene.id || 'Unknown',
+        narration: state.current_scene.description,
+      }, { renderImmediately: false });
     }
+    renderFeed();
+    renderOptions(['Look around.', 'Wait and observe.', 'Talk to someone nearby.']);
+    updateContinueButton();
   } catch (err) {
-    console.error('Load scenario error:', err);
-    alert('Error: ' + err.message);
-  } finally {
-    setLoading(false);
+    hasScenario = false;
+    timelineEl.innerHTML = `<div class="timeline-entry error-entry"><div class="timeline-body"><p>${escapeHtml(err.message)}</p><p style="margin-top:0.5rem;color:var(--muted)">Use <strong>New Scenario</strong> to create or load a scenario.</p></div></div>`;
+    renderSidebar({});
+    updateContinueButton();
   }
 }
 
-// ---------------------------------------------------------------------------
-// Turn Handling
-// ---------------------------------------------------------------------------
+async function updateContinueButton() {
+  try {
+    const sessions = await apiGet('/api/sessions');
+    const btn = document.getElementById('btn-continue');
+    if (sessions && sessions.length > 0) {
+      btn.style.display = '';
+      btn.textContent = `Continue (${sessions.length})`;
+    } else {
+      btn.style.display = 'none';
+    }
+  } catch {
+    document.getElementById('btn-continue').style.display = 'none';
+  }
+}
 
 async function sendTurn(userInput) {
   if (isLoading) return;
   if (!userInput || !userInput.trim()) return;
 
   setLoading(true);
+  const cleaned = userInput.trim();
 
   try {
-    const result = await apiPost('/api/turn', { user_input: userInput.trim() });
-
+    const result = await apiPost('/api/turn', { user_input: cleaned });
     currentTurnNumber = result.turn_number || currentTurnNumber + 1;
+    appendTurnResult({
+      turn_number: result.turn_number,
+      timestamp: result.timestamp || new Date().toISOString(),
+      user_input: cleaned,
+      narration: result.narration || '',
+      npc_dialogue: result.npc_dialogue || [],
+      next_options: result.next_options || [],
+      used_skills: result.used_skills || [],
+    });
 
-    // Append narration to log
-    if (result.narration) {
-      renderNarration({
-        turn_number: result.turn_number,
-        timestamp: result.timestamp || new Date().toISOString(),
-        narration: result.narration,
-        user_input: userInput.trim(),
-      });
+    if (result.ending) {
+      showEnding(result.ending);
     }
 
-    // Append dialogue cards
-    if (result.npc_dialogue && result.npc_dialogue.length > 0) {
-      renderDialogue(result.npc_dialogue);
-    }
-
-    // Update sidebar
     if (result.player_state) {
-      // Re-fetch full state to get all derived fields (inventory items, etc.)
       const fullState = await apiGet('/api/state');
       renderSidebar(fullState);
     }
 
-    // Update options buttons
-    if (result.next_options && result.next_options.length > 0) {
-      renderOptions(result.next_options);
-    } else {
-      renderOptions(['Continue.', 'Look around.', 'Wait.']);
-    }
-
-    // Clear input
+    renderOptions(result.next_options && result.next_options.length > 0 ? result.next_options : ['Continue.', 'Look around.', 'Wait.']);
     userInputEl.value = '';
     userInputEl.focus();
-
   } catch (err) {
-    console.error('Turn error:', err);
-    renderNarration({
+    appendFeedEntry({
+      kind: 'error',
       turn_number: currentTurnNumber,
       timestamp: new Date().toISOString(),
+      title: 'Error',
       narration: `Error: ${err.message}. Please try again.`,
-      isError: true,
     });
   } finally {
     setLoading(false);
   }
 }
 
-// ---------------------------------------------------------------------------
-// Rendering
-// ---------------------------------------------------------------------------
+function appendTurnResult(result) {
+  const hasDialogue = Array.isArray(result.npc_dialogue) && result.npc_dialogue.length > 0;
+  const entry = {
+    kind: hasDialogue ? 'turn-with-dialogue' : 'commentary',
+    turn_number: result.turn_number,
+    timestamp: result.timestamp,
+    title: hasDialogue ? 'Turn' : 'Commentary',
+    user_input: result.user_input,
+    narration: result.narration || '',
+    dialogue_lines: result.npc_dialogue || [],
+    used_skills: result.used_skills || [],
+    append_to_previous_dialogue: !hasDialogue && canAttachCommentaryToPrevious(),
+  };
+  appendFeedEntry(entry);
+}
 
-function renderNarration(turnResult) {
-  const entry = document.createElement('div');
-  entry.className = 'narration-entry';
-  if (turnResult.isError) {
-    entry.style.borderLeftColor = '#e74c3c';
+function canAttachCommentaryToPrevious() {
+  for (let i = feedEntries.length - 1; i >= 0; i -= 1) {
+    const entry = feedEntries[i];
+    if (entry.kind === 'turn-with-dialogue' || entry.kind === 'dialogue-commentary') {
+      return true;
+    }
+    if (entry.kind === 'error' || entry.kind === 'scene') {
+      return false;
+    }
+  }
+  return false;
+}
+
+function appendFeedEntry(entry, options = {}) {
+  if (entry.append_to_previous_dialogue) {
+    const attached = attachToPreviousDialogue(entry);
+    if (attached) {
+      renderFeed();
+      scrollToBottom();
+      return;
+    }
   }
 
-  const timestamp = document.createElement('div');
-  timestamp.className = 'timestamp';
-  const timeStr = turnResult.timestamp ? formatTime(new Date(turnResult.timestamp)) : formatTime(new Date());
-  const turnLabel = turnResult.turn_number ? `Turn ${turnResult.turn_number}` : 'Start';
-  timestamp.textContent = `[${timeStr}] ${turnLabel}`;
-  if (turnResult.user_input) {
-    timestamp.textContent += ` > "${turnResult.user_input}"`;
+  feedEntries.push(entry);
+  if (options.renderImmediately !== false) {
+    renderFeed();
+    scrollToBottom();
+  }
+}
+
+function attachToPreviousDialogue(entry) {
+  for (let i = feedEntries.length - 1; i >= 0; i -= 1) {
+    const candidate = feedEntries[i];
+    if (candidate.kind === 'turn-with-dialogue' || candidate.kind === 'dialogue-commentary') {
+      candidate.kind = 'dialogue-commentary';
+      candidate.followup_commentary = candidate.followup_commentary || [];
+      candidate.followup_commentary.push({
+        timestamp: entry.timestamp,
+        text: entry.narration || '',
+      });
+      return true;
+    }
+    if (candidate.kind === 'error' || candidate.kind === 'scene') {
+      break;
+    }
+  }
+  return false;
+}
+
+function renderFeed() {
+  timelineEl.innerHTML = '';
+  for (const entry of feedEntries) {
+    timelineEl.appendChild(renderFeedEntry(entry));
+  }
+}
+
+function renderFeedEntry(entry) {
+  const element = document.createElement('section');
+  element.className = `timeline-entry ${entry.kind}-entry`;
+
+  const meta = document.createElement('div');
+  meta.className = 'timeline-meta';
+
+  const tag = document.createElement('div');
+  tag.className = 'timeline-tag';
+  tag.textContent = entry.title || 'Update';
+
+  const time = document.createElement('div');
+  time.className = 'timeline-time';
+  const timeStr = entry.timestamp ? formatTime(new Date(entry.timestamp)) : '--:--:--';
+  const turnLabel = entry.turn_number ? `Turn ${entry.turn_number}` : 'Start';
+  time.textContent = `[${timeStr}] ${turnLabel}`;
+
+  meta.appendChild(tag);
+  meta.appendChild(time);
+
+  const body = document.createElement('div');
+  body.className = 'timeline-body';
+
+  if (entry.narration) {
+    const narrationSegments = parseNarrationSegments(entry.narration);
+    for (const seg of narrationSegments) {
+      if (seg.type === 'banner') {
+        const banner = document.createElement('div');
+        banner.className = 'progression-banner';
+        banner.textContent = seg.text;
+        body.appendChild(banner);
+      } else {
+        const narrative = document.createElement('p');
+        narrative.className = 'narration-text';
+        narrative.textContent = seg.text;
+        body.appendChild(narrative);
+      }
+    }
+  }
+
+  if (entry.used_skills && entry.used_skills.length > 0) {
+    const skillWrap = document.createElement('div');
+    skillWrap.className = 'skill-usage-block';
+    const skillLabel = document.createElement('span');
+    skillLabel.className = 'skill-usage-label';
+    skillLabel.textContent = entry.used_skills.length === 1 ? 'Skill used:' : 'Skills used:';
+    skillWrap.appendChild(skillLabel);
+    const skillRow = document.createElement('div');
+    skillRow.className = 'skill-badges-row';
+    for (const skillId of entry.used_skills) {
+      const badge = document.createElement('span');
+      badge.className = 'skill-badge';
+      badge.textContent = skillId;
+      skillRow.appendChild(badge);
+    }
+    skillWrap.appendChild(skillRow);
+    body.appendChild(skillWrap);
+  }
+
+  if (entry.dialogue_lines && entry.dialogue_lines.length > 0) {
+    const stack = document.createElement('div');
+    stack.className = 'dialogue-stack';
+    for (const line of entry.dialogue_lines) {
+      stack.appendChild(renderDialogueCard(line));
+    }
+    body.appendChild(stack);
+  }
+
+  if (entry.user_input) {
+    const input = document.createElement('div');
+    input.className = 'user-input-line';
+    input.innerHTML = `<strong>You:</strong> ${escapeHtml(entry.user_input)}`;
+    body.appendChild(input);
+  }
+
+  if (entry.followup_commentary && entry.followup_commentary.length > 0) {
+    const commentary = document.createElement('div');
+    commentary.className = 'commentary-stack';
+    for (const item of entry.followup_commentary) {
+      const note = document.createElement('div');
+      note.className = 'commentary-note';
+      const ts = item.timestamp ? formatTime(new Date(item.timestamp)) : '--:--:--';
+      note.innerHTML = `<span class="commentary-label">Commentary</span><span class="commentary-time">[${ts}]</span><div>${escapeHtml(item.text || '')}</div>`;
+      commentary.appendChild(note);
+    }
+    body.appendChild(commentary);
+  }
+
+  if (entry.kind === 'error') {
+    body.classList.add('error-body');
+  }
+
+  element.appendChild(meta);
+  element.appendChild(body);
+  return element;
+}
+
+function renderDialogueCard(line) {
+  const card = document.createElement('article');
+  card.className = 'dialogue-card';
+
+  const head = document.createElement('div');
+  head.className = 'dialogue-head';
+
+  const speaker = document.createElement('span');
+  speaker.className = 'speaker';
+  speaker.textContent = line.speaker_name || line.speaker_id || 'Unknown';
+  head.appendChild(speaker);
+
+  if (line.role) {
+    const role = document.createElement('span');
+    role.className = 'role';
+    role.textContent = `(${line.role})`;
+    head.appendChild(role);
+  }
+
+  if (line.tone) {
+    const tone = document.createElement('span');
+    tone.className = 'tone';
+    tone.textContent = line.tone;
+    head.appendChild(tone);
   }
 
   const text = document.createElement('div');
-  text.className = 'narration-text';
-  text.textContent = turnResult.narration || 'Nothing happens...';
+  text.className = 'dialogue-text';
+  text.textContent = line.text || '...';
 
-  entry.appendChild(timestamp);
-  entry.appendChild(text);
-  narrationLogEl.appendChild(entry);
-
-  // Auto-scroll
-  scrollToBottom();
-}
-
-function renderDialogue(dialogueLines) {
-  if (!dialogueLines || dialogueLines.length === 0) return;
-
-  // Add a small separator
-  const separator = document.createElement('div');
-  separator.className = 'turn-separator';
-  separator.textContent = 'dialogue';
-  dialogueSectionEl.appendChild(separator);
-
-  for (const line of dialogueLines) {
-    const card = document.createElement('div');
-    card.className = 'dialogue-card';
-
-    const header = document.createElement('div');
-
-    const speaker = document.createElement('span');
-    speaker.className = 'speaker';
-    speaker.textContent = line.speaker_name || line.speaker_id || 'Unknown';
-
-    const role = document.createElement('span');
-    role.className = 'role';
-    role.textContent = line.role ? `(${line.role})` : '';
-
-    const tone = document.createElement('span');
-    tone.className = 'tone';
-    tone.textContent = line.tone || '';
-
-    header.appendChild(speaker);
-    if (line.role) header.appendChild(role);
-    if (line.tone) header.appendChild(tone);
-
-    const text = document.createElement('div');
-    text.className = 'text';
-    text.textContent = line.text || '...';
-
-    card.appendChild(header);
-    card.appendChild(text);
-    dialogueSectionEl.appendChild(card);
-  }
-
-  scrollToBottom();
+  card.appendChild(head);
+  card.appendChild(text);
+  return card;
 }
 
 function renderSidebar(state) {
-  // Scenario info
   if (state.scenario) {
     scenarioInfoEl.innerHTML = `
       <div><strong>${escapeHtml(state.scenario.title)}</strong></div>
-      <div style="color:#888; font-size:12px; margin-top:2px;">${escapeHtml(state.scenario.description || '')}</div>
-      <div style="color:#888; font-size:11px; margin-top:2px;">Difficulty: ${escapeHtml(state.scenario.difficulty || 'unknown')}</div>
+      <div style="color:var(--muted); font-size:0.82rem; margin-top:0.25rem;">${escapeHtml(state.scenario.description || '')}</div>
+      <div style="color:var(--muted); font-size:0.78rem; margin-top:0.25rem;">Difficulty: ${escapeHtml(state.scenario.difficulty || 'unknown')}</div>
     `;
   } else {
     scenarioInfoEl.innerHTML = '<div class="empty-msg">No scenario loaded</div>';
   }
 
-  // Current Act
-  if (state.current_act) {
-    const actName = typeof state.current_act === 'string' ? state.current_act : (state.current_act.name || 'Unknown');
-    currentActEl.textContent = capitalize(actName);
-  } else {
-    currentActEl.innerHTML = '<div class="empty-msg">None</div>';
-  }
+  currentActEl.textContent = state.current_act ? capitalize(typeof state.current_act === 'string' ? state.current_act : (state.current_act.name || 'Unknown')) : 'None';
 
-  // Current Scene
   if (state.current_scene) {
-    const sceneName = state.current_scene.name || state.current_scene.id || 'Unknown';
-    const sceneDesc = state.current_scene.description || '';
     currentSceneEl.innerHTML = `
-      <div><strong>${escapeHtml(sceneName)}</strong></div>
-      <div style="color:#888; font-size:12px; margin-top:2px;">${escapeHtml(sceneDesc)}</div>
+      <div><strong>${escapeHtml(state.current_scene.name || state.current_scene.id || 'Unknown')}</strong></div>
+      <div style="color:var(--muted); font-size:0.82rem; margin-top:0.25rem;">${escapeHtml(state.current_scene.description || '')}</div>
     `;
   } else {
     currentSceneEl.innerHTML = '<div class="empty-msg">None</div>';
   }
 
-  // Active NPCs
   if (state.active_npcs && state.active_npcs.length > 0) {
     const npcList = document.createElement('ul');
     for (const npc of state.active_npcs) {
@@ -335,23 +379,44 @@ function renderSidebar(state) {
     activeNpcsEl.innerHTML = '<div class="empty-msg">No one nearby</div>';
   }
 
-  // Objectives
   if (state.objectives && state.objectives.length > 0) {
+    const container = document.createElement('div');
+    const total = state.objectives.length;
+    const completeCount = state.objectives.filter(o => o.status === 'complete').length;
+    const failedCount = state.objectives.filter(o => o.status === 'failed').length;
+    const progress = document.createElement('div');
+    progress.className = 'objective-progress';
+    progress.textContent = `${completeCount} / ${total} completed`;
+    container.appendChild(progress);
     const objList = document.createElement('ul');
+    objList.className = 'objective-list';
     for (const obj of state.objectives) {
       const li = document.createElement('li');
-      li.textContent = obj.description || obj.id;
-      if (obj.status === 'complete') li.className = 'complete';
-      if (obj.status === 'failed') li.className = 'failed';
+      const status = (obj.status || 'active').toLowerCase();
+      li.className = `objective-item ${status}`;
+      const icon = document.createElement('span');
+      icon.className = 'objective-icon';
+      if (status === 'complete') icon.textContent = '✓';
+      else if (status === 'failed') icon.textContent = '✗';
+      else icon.textContent = '○';
+      const text = document.createElement('span');
+      text.className = 'objective-text';
+      text.textContent = obj.description || obj.id;
+      const badge = document.createElement('span');
+      badge.className = `objective-status-badge ${status}`;
+      badge.textContent = status === 'complete' ? 'Done' : status === 'failed' ? 'Failed' : 'Active';
+      li.appendChild(icon);
+      li.appendChild(text);
+      li.appendChild(badge);
       objList.appendChild(li);
     }
+    container.appendChild(objList);
     objectivesEl.innerHTML = '';
-    objectivesEl.appendChild(objList);
+    objectivesEl.appendChild(container);
   } else {
     objectivesEl.innerHTML = '<div class="empty-msg">None</div>';
   }
 
-  // Inventory
   if (state.inventory_items && state.inventory_items.length > 0) {
     const invList = document.createElement('ul');
     for (const item of state.inventory_items) {
@@ -374,12 +439,12 @@ function renderSidebar(state) {
     inventoryEl.innerHTML = '<div class="empty-msg">Empty</div>';
   }
 
-  // Skills
   if (state.skills && state.skills.length > 0) {
     const skillList = document.createElement('ul');
     for (const skill of state.skills) {
       const li = document.createElement('li');
-      li.textContent = skill.name || skill.id;
+      li.innerHTML = `<strong>${escapeHtml(skill.name || skill.id)}</strong>` +
+        (skill.description ? `<span class="skill-desc">${escapeHtml(skill.description)}</span>` : '');
       skillList.appendChild(li);
     }
     skillsEl.innerHTML = '';
@@ -397,7 +462,6 @@ function renderSidebar(state) {
     skillsEl.innerHTML = '<div class="empty-msg">None</div>';
   }
 
-  // Clues
   if (state.player && state.player.clues && state.player.clues.length > 0) {
     const clueList = document.createElement('ul');
     for (const clueId of state.player.clues) {
@@ -411,16 +475,10 @@ function renderSidebar(state) {
     cluesEl.innerHTML = '<div class="empty-msg">None yet</div>';
   }
 
-  // Flags
-  if (state.flags && Object.keys(state.flags).length > 0) {
+  const flags = state.flags || (state.player && state.player.flags) || {};
+  if (flags && Object.keys(flags).length > 0) {
     const lines = [];
-    for (const [key, value] of Object.entries(state.flags)) {
-      lines.push(`${key}: ${JSON.stringify(value)}`);
-    }
-    flagsEl.innerHTML = `<pre style="margin:0;white-space:pre-wrap;word-break:break-all;">${escapeHtml(lines.join('\n'))}</pre>`;
-  } else if (state.player && state.player.flags && Object.keys(state.player.flags).length > 0) {
-    const lines = [];
-    for (const [key, value] of Object.entries(state.player.flags)) {
+    for (const [key, value] of Object.entries(flags)) {
       lines.push(`${key}: ${JSON.stringify(value)}`);
     }
     flagsEl.innerHTML = `<pre style="margin:0;white-space:pre-wrap;word-break:break-all;">${escapeHtml(lines.join('\n'))}</pre>`;
@@ -429,10 +487,35 @@ function renderSidebar(state) {
   }
 }
 
+function parseNarrationSegments(text) {
+  const segments = [];
+  const lines = text.split('\n');
+  let pendingText = [];
+  const flushText = () => {
+    if (pendingText.length > 0) {
+      const joined = pendingText.join('\n').trim();
+      if (joined) segments.push({ type: 'text', text: joined });
+      pendingText = [];
+    }
+  };
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const bannerMatch = trimmed.match(/^(?:---+\s+(.+?)\s+---+|\*\*\*+\s+(.+?)\s+\*\*\*+|===+\s+(.+?)\s+===+)$/);
+    if (bannerMatch) {
+      flushText();
+      const title = bannerMatch[1] || bannerMatch[2] || bannerMatch[3];
+      segments.push({ type: 'banner', text: title });
+    } else {
+      pendingText.push(line);
+    }
+  }
+  flushText();
+  return segments;
+}
+
 function renderOptions(options) {
   optionsEl.innerHTML = '';
   if (!options || options.length === 0) return;
-
   for (const opt of options) {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
@@ -445,17 +528,8 @@ function renderOptions(options) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Event Binding
-// ---------------------------------------------------------------------------
-
 function bindEvents() {
-  // Send button click
-  sendBtnEl.addEventListener('click', () => {
-    sendTurn(userInputEl.value);
-  });
-
-  // Input enter key
+  sendBtnEl.addEventListener('click', () => sendTurn(userInputEl.value));
   userInputEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -464,23 +538,210 @@ function bindEvents() {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Utilities
-// ---------------------------------------------------------------------------
+function bindModals() {
+  // New Scenario
+  document.getElementById('btn-new').addEventListener('click', () => {
+    openModal('modal-new');
+  });
+  document.getElementById('btn-generate').addEventListener('click', async () => {
+    const body = {
+      title_hint: document.getElementById('new-title').value,
+      genre: document.getElementById('new-genre').value,
+      length: document.getElementById('new-length').value,
+      difficulty: document.getElementById('new-difficulty').value,
+      tone: document.getElementById('new-tone').value,
+      theme: document.getElementById('new-theme').value,
+    };
+    setLoading(true);
+    document.getElementById('generate-spinner').classList.add('active');
+    try {
+      const result = await apiPost('/api/scenario/generate', body);
+      closeModal('modal-new');
+      // Start the new scenario
+      await apiPost('/api/scenario/new', { scenario_id: result.data.scenario_id });
+      hasScenario = true;
+      feedEntries = [];
+      currentTurnNumber = 0;
+      const state = await apiGet('/api/state');
+      renderSidebar(state);
+      if (state.current_scene && state.current_scene.description) {
+        appendFeedEntry({
+          kind: 'scene',
+          turn_number: 0,
+          timestamp: new Date().toISOString(),
+          title: 'Scene',
+          subtitle: state.current_scene.name || state.current_scene.id || 'Unknown',
+          narration: state.current_scene.description,
+        });
+      }
+      renderOptions(['Look around.', 'Wait and observe.', 'Talk to someone nearby.']);
+      updateContinueButton();
+    } catch (err) {
+      alert('Generation failed: ' + err.message);
+    } finally {
+      setLoading(false);
+      document.getElementById('generate-spinner').classList.remove('active');
+    }
+  });
+
+  // Continue / Load
+  document.getElementById('btn-continue').addEventListener('click', async () => {
+    await renderSessionList();
+    openModal('modal-continue');
+  });
+
+  // Save
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    try {
+      await apiPost('/api/session/save', {});
+      updateContinueButton();
+      // Brief visual feedback
+      const btn = document.getElementById('btn-save');
+      const old = btn.textContent;
+      btn.textContent = 'Saved!';
+      setTimeout(() => (btn.textContent = old), 1200);
+    } catch (err) {
+      alert('Save failed: ' + err.message);
+    }
+  });
+
+  // Ending close
+  document.getElementById('btn-ending-close').addEventListener('click', () => {
+    document.getElementById('ending-overlay').classList.add('hidden');
+    timelineEl.innerHTML = '';
+    feedEntries = [];
+    hasScenario = false;
+    renderSidebar({});
+    optionsEl.innerHTML = '';
+    updateContinueButton();
+  });
+
+  // Close modal buttons
+  for (const btn of document.querySelectorAll('[data-close]')) {
+    btn.addEventListener('click', (e) => {
+      closeModal(e.target.dataset.close);
+    });
+  }
+
+  // Close on overlay click
+  for (const overlay of document.querySelectorAll('.modal-overlay')) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.add('hidden');
+    });
+  }
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+async function renderSessionList() {
+  const container = document.getElementById('session-list');
+  try {
+    const sessions = await apiGet('/api/sessions');
+    if (!sessions || sessions.length === 0) {
+      container.innerHTML = '<div class="empty-msg">No saved sessions yet.</div>';
+      return;
+    }
+    container.innerHTML = '';
+    const list = document.createElement('div');
+    list.className = 'session-list';
+    for (const s of sessions) {
+      const item = document.createElement('div');
+      item.className = 'session-item';
+      item.innerHTML = `
+        <div class="session-item-info">
+          <div class="session-item-title">${escapeHtml(s.scenario_title || 'Untitled')}</div>
+          <div class="session-item-meta">Turn ${s.turn_number || 0} &middot; ${escapeHtml(s.scenario_id || 'unknown')} &middot; ${formatDate(s.updated_at)}</div>
+        </div>
+        <div class="session-item-actions">
+          <button class="modal-btn primary" data-sid="${escapeHtml(s.session_id)}">Load</button>
+          <button class="modal-btn" data-delsid="${escapeHtml(s.session_id)}">Delete</button>
+        </div>
+      `;
+      list.appendChild(item);
+    }
+    container.appendChild(list);
+
+    // Bind load buttons
+    for (const btn of list.querySelectorAll('[data-sid]')) {
+      btn.addEventListener('click', async (e) => {
+        const sid = e.target.dataset.sid;
+        setLoading(true);
+        try {
+          await apiPost('/api/session/load', { session_id: sid });
+          hasScenario = true;
+          feedEntries = [];
+          const state = await apiGet('/api/state');
+          currentTurnNumber = state.turn_number || 0;
+          renderSidebar(state);
+          if (state.current_scene && state.current_scene.description) {
+            appendFeedEntry({
+              kind: 'scene',
+              turn_number: 0,
+              timestamp: new Date().toISOString(),
+              title: 'Scene',
+              subtitle: state.current_scene.name || state.current_scene.id || 'Unknown',
+              narration: state.current_scene.description,
+            });
+          }
+          renderOptions(['Look around.', 'Wait and observe.', 'Talk to someone nearby.']);
+          closeModal('modal-continue');
+          updateContinueButton();
+        } catch (err) {
+          alert('Load failed: ' + err.message);
+        } finally {
+          setLoading(false);
+        }
+      });
+    }
+
+    // Bind delete buttons
+    for (const btn of list.querySelectorAll('[data-delsid]')) {
+      btn.addEventListener('click', async (e) => {
+        const sid = e.target.dataset.delsid;
+        if (!confirm('Delete this session?')) return;
+        try {
+          await fetch(`/api/session/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sid }),
+          });
+          await renderSessionList();
+          updateContinueButton();
+        } catch (err) {
+          alert('Delete failed: ' + err.message);
+        }
+      });
+    }
+  } catch (err) {
+    container.innerHTML = `<div class="empty-msg">Error loading sessions: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function showEnding(text) {
+  document.getElementById('ending-text').textContent = text;
+  document.getElementById('ending-overlay').classList.remove('hidden');
+}
 
 function setLoading(loading) {
   isLoading = loading;
   userInputEl.disabled = loading;
   sendBtnEl.disabled = loading;
   sendBtnEl.textContent = loading ? '...' : 'Send';
-
-  // Disable option buttons
   const optionBtns = optionsEl.querySelectorAll('.option-btn');
   for (const btn of optionBtns) {
     btn.disabled = loading;
-    btn.style.opacity = loading ? '0.5' : '1';
-    btn.style.pointerEvents = loading ? 'none' : 'auto';
   }
+}
+
+function scrollToBottom() {
+  const leftPanel = document.querySelector('.left-panel');
+  if (leftPanel) leftPanel.scrollTop = leftPanel.scrollHeight;
 }
 
 function formatTime(date) {
@@ -491,10 +752,13 @@ function formatTime(date) {
   return `${h}:${m}:${s}`;
 }
 
-function scrollToBottom() {
-  const leftPanel = document.querySelector('.left-panel');
-  if (leftPanel) {
-    leftPanel.scrollTop = leftPanel.scrollHeight;
+function formatDate(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString();
+  } catch {
+    return iso;
   }
 }
 
@@ -509,9 +773,5 @@ function capitalize(str) {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
-
-// ---------------------------------------------------------------------------
-// Boot
-// ---------------------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', init);

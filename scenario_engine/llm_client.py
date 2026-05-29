@@ -59,6 +59,7 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
             "inventory_remove": [],
             "clues_add": [],
             "skills_add": [],
+            "used_skills": [],
             "relationship_changes": [{"npc_id": "mara_bellkeeper", "trust": 5}],
             "move_player_to_scene": None,
             "move_npc_to_scene": [],
@@ -92,6 +93,7 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
             "inventory_remove": [],
             "clues_add": ["old_tracks"],
             "skills_add": [],
+            "used_skills": [],
             "relationship_changes": [{"npc_id": "mara_bellkeeper", "trust": 10, "respect": 5}],
             "move_player_to_scene": None,
             "move_npc_to_scene": [],
@@ -117,6 +119,7 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
             "inventory_remove": [],
             "clues_add": ["ash_symbol"],
             "skills_add": [],
+            "used_skills": [],
             "relationship_changes": [],
             "move_player_to_scene": None,
             "move_npc_to_scene": [],
@@ -157,6 +160,7 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
             "inventory_remove": [],
             "clues_add": ["mayor_lied", "hidden_cellar"],
             "skills_add": [],
+            "used_skills": [],
             "relationship_changes": [
                 {"npc_id": "eldric_mayor", "trust": -10, "hostility": 5},
                 {"npc_id": "mara_bellkeeper", "trust": 5, "respect": 5},
@@ -189,11 +193,12 @@ _MOCK_RESPONSES: List[Dict[str, Any]] = [
             }
         ],
         "state_delta": {
-            "flags": {"discovered_truth": True, "act_2_complete": True},
+            "flags": {"discovered_truth": True},
             "inventory_add": [],
             "inventory_remove": [],
             "clues_add": ["ash_symbol"],
             "skills_add": [],
+            "used_skills": [],
             "relationship_changes": [{"npc_id": "mara_bellkeeper", "trust": 15, "respect": 10}],
             "move_player_to_scene": "hilltop_ruins",
             "move_npc_to_scene": [{"npc_id": "mara_bellkeeper", "scene_id": "hilltop_ruins"}],
@@ -243,6 +248,20 @@ class LLMClient:
             return None
         return None
 
+    async def generate_dialogue(self, prompt: str, scenario: Scenario, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Generate dialogue-only payloads for recovery when a turn omits spoken lines."""
+        if self.mode == LLMMode.MOCK:
+            return [
+                {
+                    "speaker_id": "mara_bellkeeper",
+                    "speaker_name": "Mara",
+                    "role": "Bellkeeper",
+                    "tone": "cautious",
+                    "text": "You're asking the right questions. The bell has not been silent by accident.",
+                }
+            ]
+        return []
+
 
 class PiperLLMAdapter(LLMClient):
     """HTTP adapter for a local llama.cpp-compatible server."""
@@ -286,7 +305,12 @@ class PiperLLMAdapter(LLMClient):
         return [
             {
                 "role": "system",
-                "content": "You are a strict JSON-only narrator for PiperScenarioLab. Return only valid JSON matching the TurnProposal schema.",
+                "content": (
+                    "You are a narrator for an interactive story engine. "
+                    "Your output must be valid JSON only. No markdown fences. No extra commentary before or after the JSON. "
+                    "When NPCs are present in the scene, you MUST include at least one spoken dialogue line in npc_dialogue. "
+                    "Never repeat the same narration from previous turns. Always advance the story."
+                ),
             },
             {"role": "user", "content": prompt},
         ]
@@ -305,7 +329,7 @@ class PiperLLMAdapter(LLMClient):
             "messages": messages,
             "temperature": 0.7,
             "stream": False,
-            "max_tokens": 1200,
+            "max_tokens": 4000,
         }
         raw = await self._post_json(payload)
         content = self._extract_content(raw)
@@ -325,11 +349,91 @@ class PiperLLMAdapter(LLMClient):
         return proposal
 
     async def repair_json(self, broken_json: str, schema_hint: str = "") -> Optional[Dict[str, Any]]:
-        del schema_hint
+        """Ask the LLM to repair broken JSON, then extract and return it."""
         from scenario_engine.repair import Repair
 
-        repaired = Repair.extract_json(broken_json)
-        return repaired
+        # First try a simple extraction in case it's just wrapped in text
+        simple = Repair.extract_json(broken_json)
+        if simple is not None:
+            return simple
+
+        # Otherwise ask the LLM to fix it
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a JSON repair tool. "
+                    "The user will provide broken or malformed JSON. "
+                    "Return ONLY valid JSON. No markdown fences. No extra commentary."
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Fix this broken JSON so it is valid.\n"
+                    f"Schema hint: {schema_hint or 'a single JSON object'}\n\n"
+                    f"Broken input:\n{broken_json[:2000]}\n\n"
+                    f"Return only the fixed JSON."
+                ),
+            },
+        ]
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": 0.2,
+            "stream": False,
+            "max_tokens": 2000,
+        }
+        try:
+            raw = await self._post_json(payload)
+            content = self._extract_content(raw)
+        except Exception as exc:
+            LOG.warning("LLM repair call failed: %s", exc)
+            return None
+        return Repair.extract_json(content)
+
+    async def generate_dialogue(self, prompt: str, scenario: Scenario, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+        del scenario
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a dialogue writer for an interactive story. "
+                    "Return ONLY valid JSON with a single key npc_dialogue containing an array of dialogue objects. "
+                    "Each object must have: speaker_id, speaker_name, role, tone, text. "
+                    "Do not narrate. Do not add commentary. Do not return empty npc_dialogue."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ]
+        if _debug_enabled():
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_jsonl(run_dir / "llm_http_payload_debug.jsonl", {
+                    "mode": "dialogue_repair",
+                    "messages": messages,
+                    "model": self.model,
+                    "base_url": self.base_url,
+                    "context": context,
+                })
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": 0.4,
+            "stream": False,
+            "max_tokens": 800,
+        }
+        raw = await self._post_json(payload)
+        content = self._extract_content(raw)
+        if _debug_enabled():
+            run_dir = get_current_debug_run_dir()
+            if run_dir is not None:
+                write_text_artifact("raw_dialogue_response.txt", content)
+        from scenario_engine.repair import Repair
+
+        extracted = Repair.extract_json(content) or {}
+        dialogue = extracted.get("npc_dialogue") or []
+        return dialogue if isinstance(dialogue, list) else []
 
     async def _post_json(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         url = self.base_url.rstrip("/") + "/v1/chat/completions"

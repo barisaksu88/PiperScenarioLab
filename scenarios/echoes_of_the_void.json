@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "title": "Echoes of the Void",
+    "description": "A lone guardian must traverse a shattered cosmic realm to reclaim a stolen star before the silence consumes everything. Time is your only ally as ancient shadows rise from the dust of forgotten stars.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1_observance": {
+      "id": "act_1_observance",
+      "name": "The Waking Silence",
+      "description": "The protagonist awakens in the debris field, confused and alone, beginning to gather information about their surroundings.",
+      "scenes": {
+        "scene_1_awakening": {
+          "id": "scene_1_awakening",
+          "name": "Debris Field Awakening",
+          "description": "You open your eyes to a silent expanse of floating metal and rock.",
+          "connected_scenes": [
+            "scene_2_wisp_encounter"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_void_compass"
+          ],
+          "clues_present": [
+            "clue_1_signal_faint"
+          ]
+        },
+        "scene_2_wisp_encounter": {
+          "id": "scene_2_wisp_encounter",
+          "name": "The Fading Light",
+          "description": "A small, translucent entity drifts into view, offering cryptic warnings.",
+          "connected_scenes": [
+            "scene_1_awakening",
+            "scene_3_archivist"
+          ],
+          "npcs_present": [
+            "npc_wisp"
+          ],
+          "items_present": [],
+          "clues_present": [
+            "clue_2_heart_beating"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_1_calibrate": {
+          "id": "obj_1_calibrate",
+          "description": "Calibrate the Void Compass to stabilize your position.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_compass_stabilized"
+      ],
+      "ending_narration": ""
+    },
+    "act_2_engagement": {
+      "id": "act_2_engagement",
+      "name": "Descent into the Relic",
+      "description": "The environment reacts to your presence, forcing an active confrontation with the remnants of the ship and the planet's core.",
+      "scenes": {
+        "scene_3_archivist": {
+          "id": "scene_3_archivist",
+          "name": "The Last Log",
+          "description": "You access a dormant terminal where an AI archivist fragments its memory.",
+          "connected_scenes": [
+            "scene_2_wisp_encounter",
+            "scene_4_relic"
+          ],
+          "npcs_present": [
+            "npc_archivist"
+          ],
+          "items_present": [
+            "item_memory_drive"
+          ],
+          "clues_present": [
+            "clue_3_core_dying"
+          ]
+        },
+        "scene_4_relic": {
+          "id": "scene_4_relic",
+          "name": "The Core Chamber",
+          "description": "A massive mechanical heart pulses weakly, guarded by unstable energy.",
+          "connected_scenes": [
+            "scene_3_archivist",
+            "scene_5_preparation"
+          ],
+          "npcs_present": [
+            "npc_relic"
+          ],
+          "items_present": [
+            "item_star_dust"
+          ],
+          "clues_present": [
+            "clue_4_essence_needed"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_2_retrieve": {
+          "id": "obj_2_retrieve",
+          "description": "Retrieve the essence vial from the core chamber using the star dust.",
+          "status": "active",
+          "required_flags": [
+            "flag_compass_stabilized"
+          ],
+          "required_clues": [
+            "clue_3_core_dying"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_essence_collected"
+      ],
+      "ending_narration": ""
+    },
+    "act_3_transcendence": {
+      "id": "act_3_transcendence",
+      "name": "The Final Sacrifice",
+      "description": "With the essence secured, you prepare to merge your consciousness with the dying star to save the universe.",
+      "scenes": {
+        "scene_5_preparation": {
+          "id": "scene_5_preparation",
+          "name": "Channeling the Light",
+          "description": "You combine the essence vial with the relic's core, feeling your physical form destabilize.",
+          "connected_scenes": [
+            "scene_4_relic",
+            "scene_6_merge"
+          ],
+          "npcs_present": [
+            "npc_archivist",
+            "npc_wisp"
+          ],
+          "items_present": [
+            "item_essence_vial"
+          ],
+          "clues_present": []
+        },
+        "scene_6_merge": {
+          "id": "scene_6_merge",
+          "name": "Becoming the Dawn",
+          "description": "Your consciousness flows into the star, creating a blinding new dawn.",
+          "connected_scenes": [
+            "scene_5_preparation"
+          ],
+          "npcs_present": [],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_3_merge": {
+          "id": "obj_3_merge",
+          "description": "Initiate the final transfer of consciousness into the star.",
+          "status": "active",
+          "required_flags": [
+            "flag_essence_collected"
+          ],
+          "required_clues": [
+            "clue_4_essence_needed"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_sacrifice_complete"
+      ],
+      "ending_narration": "The darkness recedes as your consciousness expands, knitting the fabric of reality back together. In the silence of the void, a new day begins, born from the last breath of the traveler who became the light."
+    }
+  },
+  "npcs": {
+    "npc_archivist": {
+      "id": "npc_archivist",
+      "name": "Unit 734",
+      "role": "AI Memory Core",
+      "current_scene": "Floating Debris Field",
+      "persona": {
+        "voice": "Monotone, data-dense, occasionally glitching with emotional resonance",
+        "motives": [
+          "Preserve historical data",
+          "Understand the cause of the Void"
+        ],
+        "fears": [
+          "Data corruption",
+          "Erasure of memory"
+        ],
+        "temperament": "Cautiously analytical",
+        "speech_style": "Technical jargon with poetic interjections"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 1
+      },
+      "knows": [
+        "The original star-heart frequency",
+        "Location of the Void's breach point",
+        "Player's ship telemetry"
+      ],
+      "can_reveal": [
+        "The frequency needed to wake the Heart",
+        "A map of the debris field"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_relic": {
+      "id": "npc_relic",
+      "name": "Commander Vex",
+      "role": "Fleet Relic",
+      "current_scene": "Distant Debris Cluster",
+      "persona": {
+        "voice": "Gravelly, commanding, haunted by past failures",
+        "motives": [
+          "Find a way to save the fleet",
+          "Redeem his lost squadron"
+        ],
+        "fears": [
+          "Being forgotten",
+          "Repeating the mistake of the last commander"
+        ],
+        "temperament": "Brutally pragmatic",
+        "speech_style": "Short, imperative sentences"
+      },
+      "relationship_to_player": {
+        "trust": -1,
+        "fear": 0,
+        "hostility": 2,
+        "respect": 0
+      },
+      "knows": [
+        "The physical toll of Void exposure",
+        "Location of the Heart's core stabilizer"
+      ],
+      "can_reveal": [
+        "How to survive the Heart's ignition",
+        "The cost of the final sacrifice"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_wisp": {
+      "id": "npc_wisp",
+      "name": "Echo-9",
+      "role": "Fading Consciousness",
+      "current_scene": "Near the Dying Heart",
+      "persona": {
+        "voice": "Whispery, shifting between gender, fading in and out",
+        "motives": [
+          "Merge with the light",
+          "Help the player before vanishing"
+        ],
+        "fears": [
+          "Being trapped in the dark",
+          "Dying without purpose"
+        ],
+        "temperament": "Melancholic yet hopeful",
+        "speech_style": "Fragmented, metaphorical"
+      },
+      "relationship_to_player": {
+        "trust": 1,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "The emotional state of the Heart",
+        "The path of least resistance through the debris"
+      ],
+      "can_reveal": [],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_star_dust": {
+      "id": "item_star_dust",
+      "name": "Stardust Fragment",
+      "description": "A glowing shard of crystallized starlight that hums when near the Heart.",
+      "category": "artifact"
+    },
+    "item_void_compass": {
+      "id": "item_void_compass",
+      "name": "Void Compass",
+      "description": "A magnetic device that points not North, but toward the source of the Void's energy.",
+      "category": "tool"
+    },
+    "item_essence_vial": {
+      "id": "item_essence_vial",
+      "name": "Void Essence Vial",
+      "description": "Contains a captured drop of the ambient darkness; useful for shielding or binding.",
+      "category": "artifact"
+    },
+    "item_memory_drive": {
+      "id": "item_memory_drive",
+      "name": "Memory Drive",
+      "description": "A ruggedized drive containing the last logs of the original crew.",
+      "category": "tool"
+    }
+  },
+  "skills": {
+    "skill_resonance": {
+      "id": "skill_resonance",
+      "name": "Void Resonance",
+      "description": "Allows the player to detect energy fluctuations in the debris field and synchronize with the Heart's rhythm.",
+      "category": "general"
+    },
+    "skill_form_shift": {
+      "id": "skill_form_shift",
+      "name": "Form Shift",
+      "description": "Temporarily alters the player's physical composition to survive extreme heat or cold, at a mental cost.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1_observance",
+    "current_scene": "scene_1_awakening",
+    "inventory": [],
+    "skills": [
+      "skill_resonance",
+      "skill_form_shift"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

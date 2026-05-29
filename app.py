@@ -21,6 +21,7 @@ from scenario_engine.models import (
     TurnInput,
     TurnResult,
 )
+from scenario_engine.scenario_generator import ScenarioGenerator
 from scenario_engine.storage import Storage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -33,7 +34,6 @@ LOG = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: create storage, LLM client, engine, and auto-load scenario."""
-    # Read SCENARIO_LLM_MODE env var (default "mock")
     llm_mode_str = os.environ.get("SCENARIO_LLM_MODE", "mock").lower()
     try:
         llm_mode = LLMMode(llm_mode_str)
@@ -41,21 +41,21 @@ async def lifespan(app: FastAPI):
         llm_mode = LLMMode.MOCK
         llm_mode_str = LLMMode.MOCK.value
 
-    # Create Storage
     storage = Storage(
         scenarios_dir=os.environ.get("SCENARIO_STORAGE_DIR", "scenarios"),
         sessions_dir=os.environ.get("SCENARIO_SESSIONS_DIR", "sessions"),
     )
 
-    # Create LLMClient
+    llm_config = {
+        "base_url": os.environ.get("SCENARIO_LLM_BASE_URL", "http://127.0.0.1:8080"),
+        "model": os.environ.get("SCENARIO_LLM_MODEL", "qwen"),
+        "timeout_seconds": float(os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS") or 120.0),
+    }
+
     if llm_mode == LLMMode.PIPER:
         llm_client = PiperLLMAdapter(
             piper_repo_dir=os.environ.get("PIPER_REPO_DIR"),
-            config={
-                "base_url": os.environ.get("SCENARIO_LLM_BASE_URL"),
-                "model": os.environ.get("SCENARIO_LLM_MODEL"),
-                "timeout_seconds": os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS"),
-            },
+            config=llm_config,
         )
         LOG.info(
             "ScenarioLab piper mode configured for %s model=%s timeout=%ss",
@@ -66,18 +66,29 @@ async def lifespan(app: FastAPI):
     else:
         llm_client = LLMClient(mode=llm_mode)
 
-    # Create ScenarioEngine
     engine = ScenarioEngine(storage=storage, llm_client=llm_client)
 
-    # Auto-load tiny_fantasy_sample on startup
-    try:
-        await engine.load_scenario("tiny_fantasy_sample")
-    except Exception as e:
-        LOG.warning("Could not auto-load tiny_fantasy_sample: %s", e)
+    # Try to restore the most recent session, otherwise fall back to tiny_fantasy_sample
+    sessions = storage.list_sessions()
+    if sessions:
+        # Sort by updated_at descending to get the most recent
+        most_recent = sorted(sessions, key=lambda s: s.get("updated_at", ""), reverse=True)[0]
+        try:
+            await engine.load_session(most_recent["session_id"])
+            LOG.info("Restored session %s (scenario: %s)", most_recent["session_id"], most_recent.get("scenario_id", "unknown"))
+        except Exception as e:
+            LOG.error("Could not restore session %s: %s", most_recent["session_id"], e)
+            # Do not silently fall back to sample when a session exists but failed to load.
+            # The user expects to continue their saved game; a fallback would be confusing.
+    else:
+        try:
+            await engine.load_scenario("tiny_fantasy_sample")
+        except Exception as e:
+            LOG.warning("Could not auto-load tiny_fantasy_sample: %s", e)
 
-    # Store engine as app.state.engine
     app.state.engine = engine
     app.state.llm_mode = llm_client.mode.value
+    app.state.llm_config = llm_config
 
     yield
 
@@ -94,7 +105,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: allow all origins for development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -115,6 +125,23 @@ class NewScenarioRequest(BaseModel):
 class LoadScenarioRequest(BaseModel):
     scenario_id: str
     session_id: str | None = None
+
+
+class LoadSessionRequest(BaseModel):
+    session_id: str
+
+
+class DeleteSessionRequest(BaseModel):
+    session_id: str
+
+
+class GenerateScenarioRequest(BaseModel):
+    title_hint: str = ""
+    genre: str = "fantasy"
+    length: str = "short"
+    difficulty: str = "medium"
+    tone: str = "mysterious"
+    theme: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -181,6 +208,111 @@ async def load_scenario(request: Request, body: LoadScenarioRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/scenario/generate", response_model=APIResponse)
+async def generate_scenario(request: Request, body: GenerateScenarioRequest):
+    """Generate a new scenario using the LLM and save it to disk."""
+    cfg = request.app.state.llm_config
+    generator = ScenarioGenerator(
+        base_url=cfg["base_url"],
+        model=cfg["model"],
+        timeout_seconds=cfg["timeout_seconds"],
+    )
+    try:
+        scenario = await generator.generate(
+            title_hint=body.title_hint,
+            genre=body.genre,
+            length=body.length,
+            difficulty=body.difficulty,
+            tone=body.tone,
+            theme=body.theme,
+        )
+        # Save to scenarios dir
+        scenarios_dir = Path(os.environ.get("SCENARIO_STORAGE_DIR", "scenarios"))
+        scenarios_dir.mkdir(parents=True, exist_ok=True)
+        # Create safe filename from title
+        safe_title = "".join(c if c.isalnum() else "_" for c in scenario.metadata.title).lower()
+        if not safe_title:
+            safe_title = "generated_scenario"
+        scenario_id = safe_title
+        path = scenarios_dir / f"{scenario_id}.json"
+        # If file exists, append a number
+        counter = 1
+        original_id = scenario_id
+        while path.exists():
+            scenario_id = f"{original_id}_{counter}"
+            path = scenarios_dir / f"{scenario_id}.json"
+            counter += 1
+        path.write_text(scenario.model_dump_json(indent=2), encoding="utf-8")
+        return APIResponse(
+            success=True,
+            data={"scenario_id": scenario_id, "title": scenario.metadata.title},
+            message=f"Generated scenario '{scenario.metadata.title}' saved as {scenario_id}.json",
+        )
+    except Exception as e:
+        LOG.exception("Scenario generation failed")
+        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+
+
+@app.get("/api/sessions")
+async def list_sessions(request: Request):
+    """List saved sessions."""
+    engine = _get_engine(request)
+    return engine.storage.list_sessions()
+
+
+@app.post("/api/session/save", response_model=APIResponse)
+async def save_session(request: Request):
+    """Explicitly save the current session state."""
+    engine = _get_engine(request)
+    if not engine.scenario:
+        raise HTTPException(status_code=400, detail="No scenario loaded")
+    try:
+        session_state = engine._build_session_state_dict()
+        engine.storage.save_session(engine.session_id, session_state)
+        return APIResponse(
+            success=True,
+            data={"session_id": engine.session_id},
+            message="Session saved",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/session/load", response_model=APIResponse)
+async def load_session(request: Request, body: LoadSessionRequest):
+    """Load a previously saved session and continue where it left off."""
+    engine = _get_engine(request)
+    try:
+        await engine.load_session(body.session_id)
+        state = engine.get_state()
+        return APIResponse(
+            success=True,
+            data={
+                "session_id": engine.session_id,
+                "state": state.model_dump(mode="json"),
+            },
+            message="Session loaded",
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Session '{body.session_id}' not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/session/delete", response_model=APIResponse)
+async def delete_session(request: Request, body: DeleteSessionRequest):
+    """Delete a saved session and its log."""
+    engine = _get_engine(request)
+    try:
+        deleted = engine.storage.delete_session(body.session_id)
+        return APIResponse(
+            success=deleted,
+            message="Session deleted" if deleted else "Session not found",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/state", response_model=SessionStateResponse)
 async def get_state(request: Request):
     """Return current engine state."""
@@ -242,7 +374,6 @@ async def get_mode(request: Request):
 # Static Files
 # ---------------------------------------------------------------------------
 
-# Determine the correct path for the web directory
 WEB_DIR = FRONTEND_DIST_DIR if FRONTEND_DIST_DIR.exists() else (Path(__file__).parent / "web")
 app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
 
