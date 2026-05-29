@@ -716,24 +716,26 @@ class ScenarioEngine:
             if npc_id in self.scenario.npcs:
                 self.scenario.npcs[npc_id].current_scene = scene_id
 
-        # Complete objectives
+        # Complete objectives (only in the current act)
         for obj_id in delta.complete_objectives:
-            for act in self.scenario.acts.values():
-                if obj_id in act.objectives:
-                    act.objectives[obj_id].status = "complete"
+            current_act = self._get_current_act()
+            if current_act is not None and obj_id in current_act.objectives:
+                current_act.objectives[obj_id].status = "complete"
 
-        # Fail objectives
+        # Fail objectives (only in the current act)
         for obj_id in delta.fail_objectives:
-            for act in self.scenario.acts.values():
-                if obj_id in act.objectives:
-                    act.objectives[obj_id].status = "failed"
+            current_act = self._get_current_act()
+            if current_act is not None and obj_id in current_act.objectives:
+                current_act.objectives[obj_id].status = "failed"
 
         # Auto-complete objectives whose prerequisites are now met
+        # ONLY in the current act — objectives in future acts should not be
+        # auto-completed until the player reaches that act.
         player_flags = self.scenario.player.flags
         player_clues = set(self.scenario.player.clues)
         current_act = self._get_current_act()
-        for act in self.scenario.acts.values():
-            for obj in act.objectives.values():
+        if current_act is not None:
+            for obj in current_act.objectives.values():
                 if obj.status != "active":
                     continue
                 flags_met = all(flag in player_flags for flag in obj.required_flags)
