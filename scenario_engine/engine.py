@@ -731,6 +731,7 @@ class ScenarioEngine:
         # Auto-complete objectives whose prerequisites are now met
         player_flags = self.scenario.player.flags
         player_clues = set(self.scenario.player.clues)
+        current_act = self._get_current_act()
         for act in self.scenario.acts.values():
             for obj in act.objectives.values():
                 if obj.status != "active":
@@ -739,6 +740,16 @@ class ScenarioEngine:
                 clues_met = all(clue in player_clues for clue in obj.required_clues)
                 if flags_met and clues_met:
                     obj.status = "complete"
+
+        # Auto-complete act flags when all objectives in an act are done
+        # This is critical: without it, acts never progress and scenarios never end
+        for act in self.scenario.acts.values():
+            if not act.objectives:
+                continue
+            all_complete = all(obj.status in ("complete", "failed") for obj in act.objectives.values())
+            if all_complete:
+                for flag in act.completion_flags:
+                    self.scenario.player.flags[flag] = True
 
         # NPC status changes
         for npc_id, status in delta.npc_status_changes.items():
