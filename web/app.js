@@ -18,6 +18,7 @@ const inventoryEl = document.getElementById('inventory');
 const skillsEl = document.getElementById('skills');
 const cluesEl = document.getElementById('clues');
 const flagsEl = document.getElementById('flags');
+const scorePanelEl = document.getElementById('score-panel');
 const userInputEl = document.getElementById('user-input');
 const sendBtnEl = document.getElementById('send-btn');
 const optionsEl = document.getElementById('options');
@@ -116,7 +117,7 @@ async function sendTurn(userInput) {
     });
 
     if (result.ending) {
-      showEnding(result.ending);
+      showEnding(result);
     }
 
     if (result.player_state) {
@@ -353,6 +354,31 @@ function renderSidebar(state) {
     `;
   } else {
     scenarioInfoEl.innerHTML = '<div class="empty-msg">No scenario loaded</div>';
+  }
+
+  // Score / Progress panel
+  if (state.score !== undefined && state.scenario) {
+    const objectivesTotal = state.objectives_total ?? 0;
+    const objectivesComplete = state.objectives_complete ?? 0;
+    const cluesFound = state.clues_found ?? 0;
+    const actsTotal = state.acts_total ?? 0;
+    const actsComplete = state.acts_complete ?? 0;
+    const completionPct = objectivesTotal > 0
+      ? Math.round((objectivesComplete / objectivesTotal) * 100)
+      : 0;
+
+    scorePanelEl.innerHTML = `
+      <div class="score-display">${state.score}</div>
+      <div class="score-label">Score</div>
+      <div class="score-details">
+        <div class="score-detail-row"><span>Objectives</span><span>${objectivesComplete} / ${objectivesTotal}</span></div>
+        <div class="score-detail-row"><span>Clues Found</span><span>${cluesFound}</span></div>
+        <div class="score-detail-row"><span>Acts</span><span>${actsComplete} / ${actsTotal}</span></div>
+        <div class="score-detail-row"><span>Completion</span><span class="completion-value">${completionPct}%</span></div>
+      </div>
+    `;
+  } else {
+    scorePanelEl.innerHTML = '<div class="empty-msg">No data</div>';
   }
 
   currentActEl.textContent = state.current_act ? capitalize(typeof state.current_act === 'string' ? state.current_act : (state.current_act.name || 'Unknown')) : 'None';
@@ -595,11 +621,7 @@ function bindModals() {
     try {
       await apiPost('/api/session/save', {});
       updateContinueButton();
-      // Brief visual feedback
-      const btn = document.getElementById('btn-save');
-      const old = btn.textContent;
-      btn.textContent = 'Saved!';
-      setTimeout(() => (btn.textContent = old), 1200);
+      showToast('Session saved successfully');
     } catch (err) {
       alert('Save failed: ' + err.message);
     }
@@ -703,14 +725,18 @@ async function renderSessionList() {
     // Bind delete buttons
     for (const btn of list.querySelectorAll('[data-delsid]')) {
       btn.addEventListener('click', async (e) => {
-        const sid = e.target.dataset.delsid;
+        const sid = e.currentTarget.dataset.delsid;
         if (!confirm('Delete this session?')) return;
         try {
-          await fetch(`/api/session/delete`, {
+          const res = await fetch(`/api/session/delete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sid }),
           });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: res.statusText }));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
           await renderSessionList();
           updateContinueButton();
         } catch (err) {
@@ -723,8 +749,33 @@ async function renderSessionList() {
   }
 }
 
-function showEnding(text) {
+function showEnding(result) {
+  const text = result.ending || '';
   document.getElementById('ending-text').textContent = text;
+
+  const summaryEl = document.getElementById('ending-summary');
+  const score = result.score ?? 0;
+  const objectivesTotal = result.objectives_total ?? 0;
+  const objectivesComplete = result.objectives_complete ?? 0;
+  const cluesFound = result.clues_found ?? 0;
+  const actsTotal = result.acts_total ?? 0;
+  const actsComplete = result.acts_complete ?? 0;
+  const turnsTaken = result.turn_number ?? 0;
+  const completionPct = objectivesTotal > 0
+    ? Math.round((objectivesComplete / objectivesTotal) * 100)
+    : 0;
+
+  summaryEl.innerHTML = `
+    <div class="summary-grid">
+      <div class="summary-row"><span class="summary-label">Final Score</span><span class="summary-value score-value">${score}</span></div>
+      <div class="summary-row"><span class="summary-label">Objectives</span><span class="summary-value">${objectivesComplete} / ${objectivesTotal}</span></div>
+      <div class="summary-row"><span class="summary-label">Clues Found</span><span class="summary-value">${cluesFound}</span></div>
+      <div class="summary-row"><span class="summary-label">Acts Completed</span><span class="summary-value">${actsComplete} / ${actsTotal}</span></div>
+      <div class="summary-row"><span class="summary-label">Turns Taken</span><span class="summary-value">${turnsTaken}</span></div>
+      <div class="summary-row"><span class="summary-label">Completion</span><span class="summary-value completion-value">${completionPct}%</span></div>
+    </div>
+  `;
+
   document.getElementById('ending-overlay').classList.remove('hidden');
 }
 
@@ -742,6 +793,29 @@ function setLoading(loading) {
 function scrollToBottom() {
   const leftPanel = document.querySelector('.left-panel');
   if (leftPanel) leftPanel.scrollTop = leftPanel.scrollHeight;
+}
+
+function showToast(message, type = 'success') {
+  const existing = document.getElementById('toast-container');
+  if (existing) existing.remove();
+
+  const container = document.createElement('div');
+  container.id = 'toast-container';
+  container.className = `toast-container toast-${type}`;
+  container.innerHTML = `
+    <span class="toast-icon">${type === 'success' ? '✓' : '✗'}</span>
+    <span class="toast-message">${escapeHtml(message)}</span>
+  `;
+  document.body.appendChild(container);
+
+  requestAnimationFrame(() => {
+    container.classList.add('toast-visible');
+  });
+
+  setTimeout(() => {
+    container.classList.remove('toast-visible');
+    setTimeout(() => container.remove(), 300);
+  }, 2200);
 }
 
 function formatTime(date) {
