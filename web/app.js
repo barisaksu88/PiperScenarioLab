@@ -25,7 +25,7 @@ const optionsEl = document.getElementById('options');
 const modeBadgeEl = document.getElementById('mode-badge');
 
 async function apiGet(path) {
-  const res = await fetch(path);
+  const res = await fetch(path, { cache: 'no-store' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || `HTTP ${res.status}`);
@@ -38,6 +38,7 @@ async function apiPost(path, body) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    cache: 'no-store',
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
@@ -689,10 +690,13 @@ async function renderSessionList() {
     }
     container.appendChild(list);
 
-    // Bind load buttons
-    for (const btn of list.querySelectorAll('[data-sid]')) {
-      btn.addEventListener('click', async (e) => {
-        const sid = e.target.dataset.sid;
+    // Event delegation for load/delete buttons
+    list.addEventListener('click', async (e) => {
+      const loadBtn = e.target.closest('[data-sid]');
+      const delBtn = e.target.closest('[data-delsid]');
+      
+      if (loadBtn) {
+        const sid = loadBtn.dataset.sid;
         setLoading(true);
         try {
           await apiPost('/api/session/load', { session_id: sid });
@@ -719,19 +723,17 @@ async function renderSessionList() {
         } finally {
           setLoading(false);
         }
-      });
-    }
-
-    // Bind delete buttons
-    for (const btn of list.querySelectorAll('[data-delsid]')) {
-      btn.addEventListener('click', async (e) => {
-        const sid = e.currentTarget.dataset.delsid;
-        if (!confirm('Delete this session?')) return;
+        return;
+      }
+      
+      if (delBtn) {
+        const sid = delBtn.dataset.delsid;
         try {
           const res = await fetch(`/api/session/delete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sid }),
+            cache: 'no-store',
           });
           if (!res.ok) {
             const err = await res.json().catch(() => ({ detail: res.statusText }));
@@ -742,8 +744,9 @@ async function renderSessionList() {
         } catch (err) {
           alert('Delete failed: ' + err.message);
         }
-      });
-    }
+        return;
+      }
+    });
   } catch (err) {
     container.innerHTML = `<div class="empty-msg">Error loading sessions: ${escapeHtml(err.message)}</div>`;
   }
