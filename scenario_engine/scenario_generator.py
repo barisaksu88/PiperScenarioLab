@@ -70,19 +70,29 @@ class ScenarioGenerator:
             raise ScenarioGeneratorError("LLM response missing choices")
         first = choices[0] or {}
         if isinstance(first.get("message"), dict):
-            return str(first["message"].get("content") or "")
+            msg = first["message"]
+            # Some reasoning models (e.g. Qwen 3.5) put thinking in reasoning_content
+            # and actual output in content. If content is empty, fall back to
+            # reasoning_content so we can at least attempt extraction/repair.
+            content = str(msg.get("content") or "")
+            if not content.strip():
+                content = str(msg.get("reasoning_content") or "")
+            return content
         if isinstance(first.get("text"), str):
             return first["text"]
         delta = first.get("delta") or {}
         return str(delta.get("content") or "")
 
     def _generate_json(self, messages: List[Dict[str, str]], max_tokens: int = 2000) -> Dict[str, Any]:
+        # Bump tokens for reasoning models that spend budget on thinking.
+        # For Qwen 3.5, ~40-60% of tokens can be reasoning before actual output.
+        effective_max = min(max(int(max_tokens * 2.5), 4000), 16000)
         payload = {
             "model": self.model,
             "messages": messages,
             "temperature": 0.75,
             "stream": False,
-            "max_tokens": max_tokens,
+            "max_tokens": effective_max,
         }
         raw = self._post_json(payload)
         content = self._extract_content(raw)
