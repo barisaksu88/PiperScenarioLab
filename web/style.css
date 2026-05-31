@@ -295,9 +295,17 @@ header {
   line-height: 1.5;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .sidebar-section.debug {
   font-family: Consolas, "Courier New", monospace;
   font-size: 0.8rem;
+}
+
+.sidebar-section.debug.hidden {
+  display: none;
 }
 
 .empty-msg {
