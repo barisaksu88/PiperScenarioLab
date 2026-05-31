@@ -36,7 +36,7 @@ class ScenarioGenerator:
 
     def __init__(
         self,
-        base_url: str = "http://127.0.0.1:8080",
+        base_url: str = "http://127.0.0.1:8081",
         model: str = "qwen",
         timeout_seconds: float = 120.0,
     ):

@@ -193,7 +193,7 @@ class LlamaServerManager:
         gpu_layers = os.environ.get("SCENARIO_GPU_LAYERS") or self.cfg.piper_config.get("LLAMA_SERVER_GPU_LAYERS") or 0
         reasoning_budget = os.environ.get("SCENARIO_REASONING_BUDGET") or self.cfg.piper_config.get("LLAMA_SERVER_REASONING_BUDGET")
         mmproj = os.environ.get("SCENARIO_MMPROJ_PATH") or self.cfg.piper_config.get("MMPROJ_PATH")
-        port = urllib.parse.urlparse(self.cfg.scenario_llm_base_url).port or 8080
+        port = urllib.parse.urlparse(self.cfg.scenario_llm_base_url).port or 8081
 
         cmd = [
             str(exe),

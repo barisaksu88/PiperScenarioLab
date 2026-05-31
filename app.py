@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):
     )
 
     llm_config = {
-        "base_url": os.environ.get("SCENARIO_LLM_BASE_URL", "http://127.0.0.1:8080"),
+        "base_url": os.environ.get("SCENARIO_LLM_BASE_URL", "http://127.0.0.1:8081"),
         "model": os.environ.get("SCENARIO_LLM_MODEL", "qwen"),
         "timeout_seconds": float(os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS") or 120.0),
     }

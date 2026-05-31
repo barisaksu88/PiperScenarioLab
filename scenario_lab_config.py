@@ -33,7 +33,7 @@ class ScenarioLabRuntimeConfig:
     scenario_host: str = "127.0.0.1"
     scenario_port: int = 8000
     scenario_llm_mode: str = "mock"
-    scenario_llm_base_url: str = "http://127.0.0.1:8080"
+    scenario_llm_base_url: str = "http://127.0.0.1:8081"
     scenario_llm_model: str = "qwen"
     scenario_llm_timeout_seconds: float = 300.0
     scenario_debug_llm: bool = False
@@ -111,7 +111,7 @@ def load_runtime_config() -> ScenarioLabRuntimeConfig:
     bridge_ok, bridge_cfg = _bridge_piper_config(piper_repo_dir)
 
     llm_mode = os.environ.get("SCENARIO_LLM_MODE", "mock").strip().lower()
-    llm_base_url = os.environ.get("SCENARIO_LLM_BASE_URL") or str(bridge_cfg.get("LLAMA_SERVER_URL") or "http://127.0.0.1:8080")
+    llm_base_url = os.environ.get("SCENARIO_LLM_BASE_URL") or str(bridge_cfg.get("LLAMA_SERVER_URL") or "http://127.0.0.1:8081")
     llm_model = os.environ.get("SCENARIO_LLM_MODEL") or str(bridge_cfg.get("LLAMA_SERVER_MODEL") or "qwen")
     timeout_seconds = float(os.environ.get("SCENARIO_LLM_TIMEOUT_SECONDS") or 300.0)
 

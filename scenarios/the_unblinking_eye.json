@@ -1,0 +1,440 @@
+{
+  "metadata": {
+    "title": "The Unblinking Eye",
+    "description": "Perched on jagged rocks where the tides crash silent, a lighthouse guards a secret that no modern eye should see. A disgraced engineer arrives to fix the failing lens, only to find the keeper's ghost waiting in the dark.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "medium",
+    "estimated_duration_minutes": 45
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1_discovery": {
+      "id": "act_1_discovery",
+      "name": "The Lantern Room",
+      "description": "The engineer uncovers the tower's history in the cold lantern room.",
+      "scenes": {
+        "scene_1_entrance": {
+          "id": "scene_1_entrance",
+          "name": "Cold Lantern Room",
+          "description": "Player enters cold lantern room, glass cracked, blue light burns against storm.",
+          "connected_scenes": [
+            "scene_1_blueprint"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_broken_lantern"
+          ],
+          "clues_present": []
+        },
+        "scene_1_blueprint": {
+          "id": "scene_1_blueprint",
+          "name": "Hidden Blueprints",
+          "description": "Examining the broken lantern reveals a hidden blueprint of the tower.",
+          "connected_scenes": [
+            "scene_1_entrance",
+            "scene_1_meeting"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_blueprint"
+          ],
+          "clues_present": [
+            "clue_tower_history"
+          ]
+        },
+        "scene_1_meeting": {
+          "id": "scene_1_meeting",
+          "name": "Meeting Silas",
+          "description": "Engineer finds Silas and Mara discussing the tower's dark history.",
+          "connected_scenes": [
+            "scene_1_blueprint",
+            "scene_2_storm",
+            "scene_2_eye"
+          ],
+          "npcs_present": [
+            "npc_silas",
+            "npc_mara"
+          ],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_1_find_blueprint": {
+          "id": "obj_1_find_blueprint",
+          "description": "Retrieve the blueprint from the lantern room.",
+          "status": "active",
+          "required_flags": [
+            "flag_blueprint_found"
+          ],
+          "required_clues": [
+            "clue_tower_history"
+          ]
+        },
+        "obj_1_meet_silas": {
+          "id": "obj_1_meet_silas",
+          "description": "Converse with Silas and Mara about the tower.",
+          "status": "active",
+          "required_flags": [
+            "flag_silas_known"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "act_1_complete"
+      ],
+      "ending_narration": ""
+    },
+    "act_2_confrontation": {
+      "id": "act_2_confrontation",
+      "name": "The Storm and Eye",
+      "description": "The storm threatens stability while the Eye demands a sacrifice.",
+      "scenes": {
+        "scene_2_storm": {
+          "id": "scene_2_storm",
+          "name": "Storm Canister",
+          "description": "The storm canister activates, threatening the structural integrity of the room.",
+          "connected_scenes": [
+            "scene_1_meeting",
+            "scene_2_eye"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_storm_canister"
+          ],
+          "clues_present": []
+        },
+        "scene_2_eye": {
+          "id": "scene_2_eye",
+          "name": "The Eye",
+          "description": "The Eye watches from above, demanding a soul anchor for guidance.",
+          "connected_scenes": [
+            "scene_2_storm",
+            "scene_2_vane",
+            "scene_1_meeting"
+          ],
+          "npcs_present": [
+            "npc_eye"
+          ],
+          "items_present": [],
+          "clues_present": []
+        },
+        "scene_2_vane": {
+          "id": "scene_2_vane",
+          "name": "Warning of Vane",
+          "description": "Vane warns that the light must either be kept or let fade to the dark.",
+          "connected_scenes": [
+            "scene_2_eye",
+            "scene_3_anchor"
+          ],
+          "npcs_present": [
+            "npc_vane"
+          ],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_2_stabilize_storm": {
+          "id": "obj_2_stabilize_storm",
+          "description": "Secure the storm canister to prevent collapse.",
+          "status": "active",
+          "required_flags": [
+            "flag_storm_stabilized"
+          ],
+          "required_clues": []
+        },
+        "obj_2_avoid_eye": {
+          "id": "obj_2_avoid_eye",
+          "description": "Avoid the Eye's gaze to prevent soul consumption.",
+          "status": "active",
+          "required_flags": [
+            "flag_eye_avoided"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "act_2_complete"
+      ],
+      "ending_narration": ""
+    },
+    "act_3_resolution": {
+      "id": "act_3_resolution",
+      "name": "The Final Choice",
+      "description": "The player secures the anchor and faces the fading ghost.",
+      "scenes": {
+        "scene_3_anchor": {
+          "id": "scene_3_anchor",
+          "name": "Soul Anchor",
+          "description": "Player secures the soul anchor to stabilize the light against the storm.",
+          "connected_scenes": [
+            "scene_2_vane",
+            "scene_3_fog"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_soul_anchor"
+          ],
+          "clues_present": []
+        },
+        "scene_3_fog": {
+          "id": "scene_3_fog",
+          "name": "Fading Ghost",
+          "description": "The fog lifts and the ghost fades into the waves, leaving the player to hold the beacon.",
+          "connected_scenes": [
+            "scene_3_anchor"
+          ],
+          "npcs_present": [],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_3_seal_anchor": {
+          "id": "obj_3_seal_anchor",
+          "description": "Insert the soul anchor to seal the light.",
+          "status": "active",
+          "required_flags": [
+            "flag_anchor_inserted"
+          ],
+          "required_clues": []
+        },
+        "obj_3_make_choice": {
+          "id": "obj_3_make_choice",
+          "description": "Choose between eternal watcher or leaving the light.",
+          "status": "active",
+          "required_flags": [
+            "flag_choice_made"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "act_3_complete"
+      ],
+      "ending_narration": "The fog lifts, revealing the open ocean beneath. The ghost fades into the waves without a sound. You stand alone to hold the beacon forever."
+    }
+  },
+  "npcs": {
+    "npc_silas": {
+      "id": "npc_silas",
+      "name": "Silas",
+      "role": "Former Guardian",
+      "current_scene": "lantern_room",
+      "persona": {
+        "voice": "Weary, steady",
+        "motives": [
+          "Preserve the light",
+          "Ensure survival of the tower"
+        ],
+        "fears": [
+          "The light dying",
+          "Being forgotten"
+        ],
+        "temperament": "Stoic",
+        "speech_style": "Formal, slow"
+      },
+      "relationship_to_player": {
+        "trust": 30,
+        "fear": 20,
+        "hostility": 10,
+        "respect": 40
+      },
+      "knows": [
+        "Tower history",
+        "Location of the core mechanism"
+      ],
+      "can_reveal": [
+        "Location of the core mechanism"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_eye": {
+      "id": "npc_eye",
+      "name": "The Eye",
+      "role": "Construct",
+      "current_scene": "lantern_room",
+      "persona": {
+        "voice": "Harsh, echoing",
+        "motives": [
+          "Maintain eternal vigil",
+          "Enforce order"
+        ],
+        "fears": [
+          "Extinguishment",
+          "Loss of purpose"
+        ],
+        "temperament": "Aggressive",
+        "speech_style": "Fragments, commands"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 80,
+        "hostility": 90,
+        "respect": 10
+      },
+      "knows": [
+        "Player intent",
+        "The price of light"
+      ],
+      "can_reveal": [
+        "The price of light"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_mara": {
+      "id": "npc_mara",
+      "name": "Mara",
+      "role": "Merchant",
+      "current_scene": "lantern_room",
+      "persona": {
+        "voice": "Sharp, pragmatic",
+        "motives": [
+          "Survival",
+          "Profit from the trade"
+        ],
+        "fears": [
+          "Darkness consuming them",
+          "Being left behind"
+        ],
+        "temperament": "Cynical",
+        "speech_style": "Short, direct"
+      },
+      "relationship_to_player": {
+        "trust": 50,
+        "fear": 0,
+        "hostility": 20,
+        "respect": 10
+      },
+      "knows": [
+        "Market prices",
+        "Supply routes"
+      ],
+      "can_reveal": [
+        "Supplies"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_vane": {
+      "id": "npc_vane",
+      "name": "Vane",
+      "role": "Architect",
+      "current_scene": "lantern_room",
+      "persona": {
+        "voice": "Arrogant, academic",
+        "motives": [
+          "Legacy",
+          "Perfection of design"
+        ],
+        "fears": [
+          "Being erased",
+          "Design flaws exposed"
+        ],
+        "temperament": "Cold",
+        "speech_style": "Technical, precise"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 10,
+        "respect": 60
+      },
+      "knows": [
+        "Original design",
+        "Why the light burns blue"
+      ],
+      "can_reveal": [
+        "Why the light burns blue"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_broken_lantern": {
+      "id": "item_broken_lantern",
+      "name": "Broken Lens",
+      "description": "A shard of the original lens, cracked but glowing with blue light.",
+      "category": "artifact"
+    },
+    "item_storm_canister": {
+      "id": "item_storm_canister",
+      "name": "Storm Canister",
+      "description": "Fuel made from captured lightning, essential for maintaining the flame.",
+      "category": "consumable"
+    },
+    "item_blueprint": {
+      "id": "item_blueprint",
+      "name": "Blueprint Fragment",
+      "description": "A folded map of the tower's foundation showing hidden passages.",
+      "category": "general"
+    },
+    "item_soul_anchor": {
+      "id": "item_soul_anchor",
+      "name": "Soul Anchor",
+      "description": "A heavy chain that can hold back the fog and stabilize the light.",
+      "category": "artifact"
+    }
+  },
+  "skills": {
+    "skill_light_mastery": {
+      "id": "skill_light_mastery",
+      "name": "Light Mastery",
+      "description": "Can control the intensity of the blue flame to reveal secrets or ward off enemies.",
+      "category": "general"
+    },
+    "skill_engineering": {
+      "id": "skill_engineering",
+      "name": "Engineering",
+      "description": "Understand the mechanical workings of the tower to fix or disable components.",
+      "category": "general"
+    },
+    "skill_negotiation": {
+      "id": "skill_negotiation",
+      "name": "Negotiation",
+      "description": "Persuade entities to reveal secrets or agree to terms.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1_discovery",
+    "current_scene": "scene_1_entrance",
+    "inventory": [],
+    "skills": [
+      "skill_light_mastery",
+      "skill_engineering",
+      "skill_negotiation"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

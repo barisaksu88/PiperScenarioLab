@@ -272,7 +272,7 @@ class PiperLLMAdapter(LLMClient):
         base_url = str(
             cfg.get("base_url")
             or os.environ.get("SCENARIO_LLM_BASE_URL")
-            or "http://127.0.0.1:8080"
+            or "http://127.0.0.1:8081"
         )
         model = str(cfg.get("model") or os.environ.get("SCENARIO_LLM_MODEL") or "qwen")
         timeout_seconds = float(
