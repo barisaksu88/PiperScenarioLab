@@ -58,6 +58,7 @@ async function init() {
 
     const state = await apiGet('/api/state');
     hasScenario = true;
+    document.getElementById('bottom-bar').classList.remove('hidden');
     currentTurnNumber = state.turn_number || 0;
     renderSidebar(state);
     feedEntries = [];
@@ -76,6 +77,7 @@ async function init() {
     updateContinueButton();
   } catch (err) {
     hasScenario = false;
+    document.getElementById('bottom-bar').classList.add('hidden');
     timelineEl.innerHTML = `<div class="timeline-entry error-entry"><div class="timeline-body"><p>${escapeHtml(err.message)}</p><p style="margin-top:0.5rem;color:var(--muted)">Use <strong>New Scenario</strong> to create or load a scenario.</p></div></div>`;
     renderSidebar({});
     updateContinueButton();
@@ -587,6 +589,7 @@ function bindModals() {
       // Start the new scenario
       await apiPost('/api/scenario/new', { scenario_id: result.data.scenario_id });
       hasScenario = true;
+      document.getElementById('bottom-bar').classList.remove('hidden');
       feedEntries = [];
       currentTurnNumber = 0;
       const state = await apiGet('/api/state');
@@ -636,6 +639,7 @@ function bindModals() {
     hasScenario = false;
     renderSidebar({});
     optionsEl.innerHTML = '';
+    document.getElementById('bottom-bar').classList.add('hidden');
     updateContinueButton();
   });
 
@@ -701,6 +705,7 @@ async function renderSessionList() {
         try {
           await apiPost('/api/session/load', { session_id: sid });
           hasScenario = true;
+          document.getElementById('bottom-bar').classList.remove('hidden');
           feedEntries = [];
           const state = await apiGet('/api/state');
           currentTurnNumber = state.turn_number || 0;
@@ -780,6 +785,7 @@ function showEnding(result) {
   `;
 
   document.getElementById('ending-overlay').classList.remove('hidden');
+  document.getElementById('bottom-bar').classList.add('hidden');
 }
 
 function setLoading(loading) {
