@@ -93,6 +93,7 @@
       "id": "act_3_resolution",
       "name": "What Lies Beneath",
       "description": "The truth is revealed at the hilltop ruins. The bell was no ordinary bell — it was a seal, and its removal has awakened something ancient.",
+      "ending_narration": "The ancient seal is restored. The bell rings out once more across the valley — not the mournful silence of before, but a clear, triumphant peal that seems to shake the very stars. Mara weeps openly at your side, no longer the guarded bellkeeper but a woman freed from a generations-old burden. Eldric is gone, fled into the hills with his guilt, though you suspect he will not get far. The village gathers in the square as dawn breaks, and for the first time in a hundred years, the bell tower sings with hope. You have changed this place forever. Whatever road takes you next, the people of this village will remember the stranger who heard the silence and chose to listen deeper.",
       "scenes": {
         "hilltop_ruins": {
           "id": "hilltop_ruins",

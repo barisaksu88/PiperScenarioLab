@@ -225,6 +225,7 @@ class ScenarioEngine:
 
         # Step 9: Build TurnResult
         now = datetime.now(timezone.utc).isoformat()
+        stats = self._calculate_score_stats()
         turn_result = TurnResult(
             turn_number=self.turn_number,
             narration=raw_proposal.narration,
@@ -238,6 +239,7 @@ class ScenarioEngine:
             current_act=self.scenario.player.current_act,
             current_scene=self._get_current_scene(),
             timestamp=now,
+            **stats,
         )
 
         # Step 10: Log entry to storage
@@ -451,6 +453,8 @@ class ScenarioEngine:
             if flags_met and current_act.ending_narration:
                 ending = current_act.ending_narration
 
+        stats = self._calculate_score_stats()
+
         return SessionStateResponse(
             scenario=self.scenario.metadata,
             player=self.scenario.player.model_copy(deep=True),
@@ -464,6 +468,7 @@ class ScenarioEngine:
             turn_number=self.turn_number,
             ending=ending,
             session_id=self.session_id,
+            **stats,
         )
 
     def get_session_log(self) -> List[SessionLogEntry]:
@@ -786,6 +791,45 @@ class ScenarioEngine:
                 active.append(npc)
 
         return active
+
+    def _calculate_score_stats(self) -> Dict[str, int]:
+        """Calculate score and completion statistics from current scenario state."""
+        if self.scenario is None:
+            return {
+                "score": 0,
+                "objectives_total": 0,
+                "objectives_complete": 0,
+                "clues_found": 0,
+                "acts_total": 0,
+                "acts_complete": 0,
+            }
+
+        objectives_total = 0
+        objectives_complete = 0
+        for act in self.scenario.acts.values():
+            for obj in act.objectives.values():
+                objectives_total += 1
+                if obj.status == "complete":
+                    objectives_complete += 1
+
+        clues_found = len(self.scenario.player.clues)
+
+        acts_total = len(self.scenario.acts)
+        acts_complete = 0
+        for act in self.scenario.acts.values():
+            if all(flag in self.scenario.player.flags for flag in act.completion_flags):
+                acts_complete += 1
+
+        score = (objectives_complete * 100) + (clues_found * 50) + (acts_complete * 200)
+
+        return {
+            "score": score,
+            "objectives_total": objectives_total,
+            "objectives_complete": objectives_complete,
+            "clues_found": clues_found,
+            "acts_total": acts_total,
+            "acts_complete": acts_complete,
+        }
 
     def _check_act_progression(self) -> Optional[Dict[str, str]]:
         """Check if the current act is complete and advance or end the scenario.

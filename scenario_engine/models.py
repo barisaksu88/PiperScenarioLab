@@ -189,6 +189,12 @@ class TurnResult(BaseModel):
     current_scene: Optional[Scene] = None
     timestamp: str = ""
     ending: Optional[str] = None
+    score: int = 0
+    objectives_total: int = 0
+    objectives_complete: int = 0
+    clues_found: int = 0
+    acts_total: int = 0
+    acts_complete: int = 0
 
 
 class SessionLogEntry(BaseModel):
@@ -228,3 +234,9 @@ class SessionStateResponse(BaseModel):
     turn_number: int = 0
     ending: Optional[str] = None
     session_id: Optional[str] = None
+    score: int = 0
+    objectives_total: int = 0
+    objectives_complete: int = 0
+    clues_found: int = 0
+    acts_total: int = 0
+    acts_complete: int = 0
