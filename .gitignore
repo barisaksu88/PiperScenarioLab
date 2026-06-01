@@ -27,5 +27,10 @@ web_ui/frontend/package-lock.json
 
 *.log
 
+# Generated scenarios (keep built-in samples)
+scenarios/*.json
+!scenarios/tiny_fantasy_sample.json
+!scenarios/tiny_flight_placeholder.json
+
 # LLM response cache
 .cache/
