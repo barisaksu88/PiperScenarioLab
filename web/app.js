@@ -349,6 +349,10 @@ function renderDialogueCard(line) {
 }
 
 function renderSidebar(state) {
+  // Clear any previously inserted dynamic elements to avoid duplication
+  sidebarEl.querySelectorAll('.time-of-day').forEach(el => el.remove());
+  sidebarEl.querySelectorAll('.stats-section').forEach(el => el.remove());
+
   if (state.scenario) {
     scenarioInfoEl.innerHTML = `
       <div><strong>${escapeHtml(state.scenario.title)}</strong></div>
@@ -364,7 +368,7 @@ function renderSidebar(state) {
     const stats = state.stats;
     const hpPct = stats.max_hp > 0 ? Math.round((stats.hp / stats.max_hp) * 100) : 0;
     scorePanelEl.insertAdjacentHTML('beforebegin', `
-      <div class="sidebar-section">
+      <div class="sidebar-section stats-section">
         <h3>Character Stats</h3>
         <div class="stats-grid">
           <div class="stat-box"><span class="stat-label">STR</span><span class="stat-value">${stats.strength}</span></div>

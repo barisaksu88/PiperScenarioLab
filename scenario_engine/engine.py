@@ -71,10 +71,9 @@ class ScenarioEngine:
         self.actor_selector = ActorSelector(self.scenario)
         self.turn_number = 0
 
-        # Initialize player stats if not present
+        # Initialize player stats (always generate fresh on load)
         if self.scenario is not None:
-            if self.scenario.player.stats is None:
-                self.scenario.player.stats = self._generate_character_stats()
+            self.scenario.player.stats = self._generate_character_stats()
             # Auto-pickup items in starting scene
             self._auto_pickup_items_in_current_scene()
             # Set NPCs to their initial scene positions
