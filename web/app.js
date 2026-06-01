@@ -62,14 +62,14 @@ async function init() {
     currentTurnNumber = state.turn_number || 0;
     renderSidebar(state);
     feedEntries = [];
-    if (state.current_scene && state.current_scene.description) {
+    if (state.current_scene) {
       appendFeedEntry({
         kind: 'scene',
         turn_number: 0,
         timestamp: new Date().toISOString(),
         title: 'Scene',
         subtitle: state.current_scene.name || state.current_scene.id || 'Unknown',
-        narration: state.current_scene.description,
+        narration: state.current_scene.description || '',
       }, { renderImmediately: false });
     }
     renderFeed();
@@ -591,17 +591,18 @@ function bindModals() {
       hasScenario = true;
       document.getElementById('bottom-bar').classList.remove('hidden');
       feedEntries = [];
+      renderFeed();
       currentTurnNumber = 0;
       const state = await apiGet('/api/state');
       renderSidebar(state);
-      if (state.current_scene && state.current_scene.description) {
+      if (state.current_scene) {
         appendFeedEntry({
           kind: 'scene',
           turn_number: 0,
           timestamp: new Date().toISOString(),
           title: 'Scene',
           subtitle: state.current_scene.name || state.current_scene.id || 'Unknown',
-          narration: state.current_scene.description,
+          narration: state.current_scene.description || '',
         });
       }
       renderOptions(['Look around.', 'Wait and observe.', 'Talk to someone nearby.']);
@@ -629,6 +630,19 @@ function bindModals() {
     } catch (err) {
       alert('Save failed: ' + err.message);
     }
+  });
+
+  // Ending new game
+  document.getElementById('btn-ending-new').addEventListener('click', () => {
+    document.getElementById('ending-overlay').classList.add('hidden');
+    timelineEl.innerHTML = '';
+    feedEntries = [];
+    hasScenario = false;
+    renderSidebar({});
+    optionsEl.innerHTML = '';
+    document.getElementById('bottom-bar').classList.add('hidden');
+    updateContinueButton();
+    openModal('modal-new');
   });
 
   // Ending close
@@ -707,17 +721,18 @@ async function renderSessionList() {
           hasScenario = true;
           document.getElementById('bottom-bar').classList.remove('hidden');
           feedEntries = [];
+          renderFeed();
           const state = await apiGet('/api/state');
           currentTurnNumber = state.turn_number || 0;
           renderSidebar(state);
-          if (state.current_scene && state.current_scene.description) {
+          if (state.current_scene) {
             appendFeedEntry({
               kind: 'scene',
               turn_number: 0,
               timestamp: new Date().toISOString(),
               title: 'Scene',
               subtitle: state.current_scene.name || state.current_scene.id || 'Unknown',
-              narration: state.current_scene.description,
+              narration: state.current_scene.description || '',
             });
           }
           renderOptions(['Look around.', 'Wait and observe.', 'Talk to someone nearby.']);
