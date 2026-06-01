@@ -1,0 +1,371 @@
+{
+  "metadata": {
+    "title": "Echoes of the Void",
+    "description": "The crew awakens from stasis to find their ship drifting through an endless dark, with no signal from home. They must navigate a hostile nebula and solve ancient puzzles to reignite their engine before time runs out.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1": {
+      "id": "act_1",
+      "name": "Waking and Assessment",
+      "description": "The player awakens and investigates their immediate surroundings to understand the situation.",
+      "scenes": {
+        "scene_wake": {
+          "id": "scene_wake",
+          "name": "Cryo-Pod Awakening",
+          "description": "You wake up in a dimly lit pod with your head throbbing; the only light comes from the blinking status light.",
+          "connected_scenes": [
+            "scene_corridor"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": []
+        },
+        "scene_corridor": {
+          "id": "scene_corridor",
+          "name": "Derelict Corridor",
+          "description": "You stumble into a dark corridor, hearing faint mechanical groans from the ship's systems.",
+          "connected_scenes": [
+            "scene_wake",
+            "scene_engine_room"
+          ],
+          "npcs_present": [
+            "npc_02"
+          ],
+          "items_present": [
+            "item_02"
+          ],
+          "clues_present": [
+            "clue_engine_status"
+          ]
+        },
+        "scene_engine_room": {
+          "id": "scene_engine_room",
+          "name": "Main Engine Room",
+          "description": "The engine room is cold and dark, but the core still hums with residual power.",
+          "connected_scenes": [
+            "scene_corridor",
+            "scene_bridge"
+          ],
+          "npcs_present": [
+            "npc_03"
+          ],
+          "items_present": [
+            "item_03"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_1": {
+          "id": "obj_1",
+          "description": "Locate the main control terminal in the engine room.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": [
+            "clue_engine_status"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_terminal_located"
+      ],
+      "ending_narration": ""
+    },
+    "act_2": {
+      "id": "act_2",
+      "name": "System Reboot and Launch",
+      "description": "The player works with the AI to reboot the ship's systems and initiate launch sequence.",
+      "scenes": {
+        "scene_bridge": {
+          "id": "scene_bridge",
+          "name": "Command Bridge",
+          "description": "The bridge is silent and mostly empty, save for the AI's holographic display flickering to life.",
+          "connected_scenes": [
+            "scene_engine_room",
+            "scene_final_check"
+          ],
+          "npcs_present": [
+            "npc_04"
+          ],
+          "items_present": [
+            "item_04"
+          ],
+          "clues_present": [
+            "clue_power_core"
+          ]
+        },
+        "scene_final_check": {
+          "id": "scene_final_check",
+          "name": "Final Systems Check",
+          "description": "The AI runs diagnostics and confirms all systems are green for departure.",
+          "connected_scenes": [
+            "scene_bridge"
+          ],
+          "npcs_present": [
+            "npc_01",
+            "npc_02"
+          ],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_2": {
+          "id": "obj_2",
+          "description": "Activate the launch sequence using the bridge console.",
+          "status": "active",
+          "required_flags": [
+            "flag_terminal_located"
+          ],
+          "required_clues": [
+            "clue_power_core"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_launch_initiated"
+      ],
+      "ending_narration": "The ship's engines roar to life as you watch the stars stretch into a trail behind you, finally breaking away from the void. Your heart pounds as the silence of space is replaced by the hum of propulsion, signaling a new chapter begins."
+    }
+  },
+  "npcs": {
+    "npc_01": {
+      "id": "npc_01",
+      "name": "Commander Halloway",
+      "role": "Ship Commander",
+      "current_scene": "Bridge",
+      "persona": {
+        "voice": "Authoritative, clipped, weary",
+        "motives": [
+          "Survival of the crew",
+          "Reclaiming the ship's honor"
+        ],
+        "fears": [
+          "Total system failure",
+          "Being blamed for the crash"
+        ],
+        "temperament": "Stoic, disciplined",
+        "speech_style": "Formal, imperative"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "Engine core status",
+        "Cryo-pod failure rates",
+        "Emergency launch protocol"
+      ],
+      "can_reveal": [
+        "Bridge override codes",
+        "Status of cryo-pods",
+        "Location of emergency supplies"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_02": {
+      "id": "npc_02",
+      "name": "Unit 7",
+      "role": "Ship AI",
+      "current_scene": "Mainframe Core",
+      "persona": {
+        "voice": "Monotone, logical, slightly glitching",
+        "motives": [
+          "System optimization",
+          "Preservation of data logs"
+        ],
+        "fears": [
+          "Logic corruption",
+          "Power depletion"
+        ],
+        "temperament": "Analytical, detached",
+        "speech_style": "Technical, precise"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "AI password",
+        "Hull integrity percentage",
+        "Void anomaly patterns"
+      ],
+      "can_reveal": [
+        "AI diagnostic modes",
+        "Hidden maintenance access",
+        "Time remaining before engine lockout"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_03": {
+      "id": "npc_03",
+      "name": "Dr. Aris",
+      "role": "Medical Officer",
+      "current_scene": "Medical Bay",
+      "persona": {
+        "voice": "Soft, anxious, rapid",
+        "motives": [
+          "Curing the crew",
+          "Understanding the void sickness"
+        ],
+        "fears": [
+          "Infection spread",
+          "Patient collapse"
+        ],
+        "temperament": "Nervous, empathetic",
+        "speech_style": "Conversational, urgent"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "Cryo-pod medical scans",
+        "Antidote storage",
+        "Vital signs of crew"
+      ],
+      "can_reveal": [
+        "Medkit location",
+        "Player's health status",
+        "Effects of cryo-reef"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_04": {
+      "id": "npc_04",
+      "name": "Siren",
+      "role": "Security Drone",
+      "current_scene": "Corridor",
+      "persona": {
+        "voice": "Mechanical, buzzing, unpredictable",
+        "motives": [
+          "Protecting the ship",
+          "Eliminating threats"
+        ],
+        "fears": [
+          "Signal jamming",
+          "Physical impact"
+        ],
+        "temperament": "Aggressive, erratic",
+        "speech_style": "Short, beeping, robotic"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "Security camera feeds",
+        "Door lock codes",
+        "Crew movement logs"
+      ],
+      "can_reveal": [
+        "Active patrol routes",
+        "Hidden compartments",
+        "Last known signal from crew"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_01": {
+      "id": "item_01",
+      "name": "Cryo-Key",
+      "description": "A metallic key with a faint blue glow, used to open the cryo-pod access panels.",
+      "category": "artifact"
+    },
+    "item_02": {
+      "id": "item_02",
+      "name": "Hydro-Cell Battery",
+      "description": "A high-capacity power cell that can temporarily boost the engine's power output.",
+      "category": "tool"
+    },
+    "item_03": {
+      "id": "item_03",
+      "name": "Medi-Stim",
+      "description": "A universal stimulant packet that restores 20% health instantly.",
+      "category": "consumable"
+    },
+    "item_04": {
+      "id": "item_04",
+      "name": "Void-Scanner",
+      "description": "A handheld device that detects anomalies and energy signatures in the ship's corridors.",
+      "category": "tool"
+    }
+  },
+  "skills": {
+    "skill_01": {
+      "id": "skill_01",
+      "name": "System Override",
+      "description": "Allows the player to force a temporary override on locked systems, consuming battery power.",
+      "category": "general"
+    },
+    "skill_02": {
+      "id": "skill_02",
+      "name": "Void-Sense",
+      "description": "Enhances perception of the ship's environment, revealing hidden paths and enemy movements.",
+      "category": "general"
+    },
+    "skill_03": {
+      "id": "skill_03",
+      "name": "Cryo-Recovery",
+      "description": "Reduces the time required to wake up from cryosleep and stabilize vital functions.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1",
+    "current_scene": "scene_wake",
+    "inventory": [],
+    "skills": [
+      "skill_01",
+      "skill_02",
+      "skill_03"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

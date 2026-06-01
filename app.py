@@ -15,6 +15,7 @@ from scenario_engine.engine import ScenarioEngine
 from scenario_engine.llm_client import LLMClient, LLMMode, PiperLLMAdapter
 from scenario_engine.models import (
     APIResponse,
+    Scenario,
     ScenariosListResponse,
     SessionLogEntry,
     SessionStateResponse,
@@ -211,6 +212,42 @@ async def load_scenario(request: Request, body: LoadScenarioRequest):
 @app.post("/api/scenario/generate", response_model=APIResponse)
 async def generate_scenario(request: Request, body: GenerateScenarioRequest):
     """Generate a new scenario using the LLM and save it to disk."""
+    llm_mode = request.app.state.llm_mode
+    
+    # Mock mode: return a copy of tiny_fantasy_sample with tweaked metadata
+    if llm_mode == "mock":
+        try:
+            mock_path = Path(os.environ.get("SCENARIO_STORAGE_DIR", "scenarios")) / "tiny_fantasy_sample.json"
+            if not mock_path.exists():
+                raise HTTPException(status_code=500, detail="Mock scenario file not found")
+            scenario = Scenario.model_validate_json(mock_path.read_text(encoding="utf-8"))
+            scenario.metadata.title = body.title_hint or scenario.metadata.title
+            scenario.metadata.description = body.theme or scenario.metadata.description
+            scenario.metadata.difficulty = body.difficulty
+            
+            scenarios_dir = Path(os.environ.get("SCENARIO_STORAGE_DIR", "scenarios"))
+            scenarios_dir.mkdir(parents=True, exist_ok=True)
+            safe_title = "".join(c if c.isalnum() else "_" for c in scenario.metadata.title).lower()
+            if not safe_title:
+                safe_title = "generated_scenario"
+            scenario_id = safe_title
+            path = scenarios_dir / f"{scenario_id}.json"
+            counter = 1
+            original_id = scenario_id
+            while path.exists():
+                scenario_id = f"{original_id}_{counter}"
+                path = scenarios_dir / f"{scenario_id}.json"
+                counter += 1
+            path.write_text(scenario.model_dump_json(indent=2), encoding="utf-8")
+            return APIResponse(
+                success=True,
+                data={"scenario_id": scenario_id, "title": scenario.metadata.title},
+                message=f"Generated scenario '{scenario.metadata.title}' saved as {scenario_id}.json (mock mode)",
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # Piper mode: use real LLM
     cfg = request.app.state.llm_config
     generator = ScenarioGenerator(
         base_url=cfg["base_url"],
@@ -226,16 +263,13 @@ async def generate_scenario(request: Request, body: GenerateScenarioRequest):
             tone=body.tone,
             theme=body.theme,
         )
-        # Save to scenarios dir
         scenarios_dir = Path(os.environ.get("SCENARIO_STORAGE_DIR", "scenarios"))
         scenarios_dir.mkdir(parents=True, exist_ok=True)
-        # Create safe filename from title
         safe_title = "".join(c if c.isalnum() else "_" for c in scenario.metadata.title).lower()
         if not safe_title:
             safe_title = "generated_scenario"
         scenario_id = safe_title
         path = scenarios_dir / f"{scenario_id}.json"
-        # If file exists, append a number
         counter = 1
         original_id = scenario_id
         while path.exists():
@@ -384,4 +418,6 @@ app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)
+    host = os.environ.get("SCENARIO_HOST", "0.0.0.0")
+    port = int(os.environ.get("SCENARIO_PORT", "8000"))
+    uvicorn.run("app:app", host=host, port=port, reload=False)

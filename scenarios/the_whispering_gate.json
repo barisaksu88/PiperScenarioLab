@@ -1,0 +1,348 @@
+{
+  "metadata": {
+    "title": "The Whispering Gate",
+    "description": "A forgotten knight awakens in a mist-shrouded forest, tasked with finding the lost key to the Sunken Temple. Strange echoes guide them through ancient ruins as shadows whisper secrets that could change their fate forever.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1": {
+      "id": "act_1",
+      "name": "The Awakening",
+      "description": "The knight awakens in a damp cell and begins to decipher the initial mystery.",
+      "scenes": {
+        "scene_cell_wake": {
+          "id": "scene_cell_wake",
+          "name": "Cold Stone Cell",
+          "description": "The knight wakes up in a cold, damp stone cell surrounded by fog that seems to move on its own.",
+          "connected_scenes": [
+            "scene_mist_corridor",
+            "scene_sanctum_gate"
+          ],
+          "npcs_present": [
+            "npc_mist_walker"
+          ],
+          "items_present": [
+            "item_phantom_mirror"
+          ],
+          "clues_present": []
+        },
+        "scene_mist_corridor": {
+          "id": "scene_mist_corridor",
+          "name": "Shifting Corridor",
+          "description": "The knight pushes through the fog into a corridor that shifts shape as they move.",
+          "connected_scenes": [
+            "scene_cell_wake",
+            "scene_sanctum_gate",
+            "scene_final_portal"
+          ],
+          "npcs_present": [
+            "npc_illusion_mistress"
+          ],
+          "items_present": [
+            "item_rusted_key"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_escape_cell": {
+          "id": "obj_escape_cell",
+          "description": "Find a way out of the cell without touching the walls.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_cell_broken"
+      ],
+      "ending_narration": ""
+    },
+    "act_2": {
+      "id": "act_2",
+      "name": "The Temple's Heart",
+      "description": "The knight enters the inner sanctum, confronts the guardian, and discovers the portal's true purpose.",
+      "scenes": {
+        "scene_sanctum_gate": {
+          "id": "scene_sanctum_gate",
+          "name": "The Inner Sanctum",
+          "description": "The knight steps into a grand hall where shadows whisper secrets of an ancient war.",
+          "connected_scenes": [
+            "scene_mist_corridor",
+            "scene_cell_wake",
+            "scene_final_portal"
+          ],
+          "npcs_present": [
+            "npc_ancient_guardian"
+          ],
+          "items_present": [
+            "item_tinder_heart"
+          ],
+          "clues_present": []
+        },
+        "scene_final_portal": {
+          "id": "scene_final_portal",
+          "name": "The Glowing Portal",
+          "description": "The knight stands before a glowing portal, realizing the shadows were testing their resolve.",
+          "connected_scenes": [
+            "scene_sanctum_gate",
+            "scene_mist_corridor"
+          ],
+          "npcs_present": [
+            "npc_last_knight"
+          ],
+          "items_present": [
+            "item_iron_cord"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_uncover_truth": {
+          "id": "obj_uncover_truth",
+          "description": "Speak with the guardian to learn the temple's true purpose.",
+          "status": "active",
+          "required_flags": [
+            "flag_cell_broken"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_portal_open"
+      ],
+      "ending_narration": "The shadows parted as the door opened to reveal a new destiny. The knight understood that the key was never meant to be found by a mortal, but carried within them all along."
+    }
+  },
+  "npcs": {
+    "npc_ancient_guardian": {
+      "id": "npc_ancient_guardian",
+      "name": "The Silent Sentinel",
+      "role": "Keeper of the Threshold",
+      "current_scene": "Entrance Hall of the Temple",
+      "persona": {
+        "voice": "Deep, resonant, echoing as if from a cavern",
+        "motives": [
+          "To filter worthy souls from the unworthy",
+          "To maintain the balance between worlds"
+        ],
+        "fears": [
+          "Mortal arrogance",
+          "Disturbance of the eternal sleep"
+        ],
+        "temperament": "Stoic, unyielding, ancient",
+        "speech_style": "Monosyllabic, rhythmic, often pausing between words"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 5,
+        "hostility": 3,
+        "respect": 2
+      },
+      "knows": [
+        "The nature of the fog",
+        "The true purpose of the gate",
+        "The origin of the key"
+      ],
+      "can_reveal": [
+        "The password of the inner sanctum",
+        "The meaning of the cryptic carvings"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_mist_walker": {
+      "id": "npc_mist_walker",
+      "name": "Whisper",
+      "role": "Shade of the Forgotten",
+      "current_scene": "Corridor of Whispers",
+      "persona": {
+        "voice": "Soft, multi-layered, overlapping voices",
+        "motives": [
+          "To guide or confuse depending on the traveler's intent",
+          "To test memory and loyalty"
+        ],
+        "fears": [
+          "Being forgotten completely",
+          "Facing a mind that remembers everything"
+        ],
+        "temperament": "Unpredictable, fluid, melancholic",
+        "speech_style": "Hesitant, whispering, shifting between past and present tenses"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 2,
+        "hostility": 0,
+        "respect": 1
+      },
+      "knows": [
+        "The secrets of the previous knights",
+        "The location of the forgotten key",
+        "How to calm the fog"
+      ],
+      "can_reveal": [
+        "The history of the temple",
+        "A riddle to solve"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_illusion_mistress": {
+      "id": "npc_illusion_mistress",
+      "name": "Lady of the Mirror",
+      "role": "Reflection of Doubt",
+      "current_scene": "Hall of Reflections",
+      "persona": {
+        "voice": "Smooth, seductive, constantly changing pitch",
+        "motives": [
+          "To tempt the player into self-doubt",
+          "To see if they trust their own reflection"
+        ],
+        "fears": [
+          "Being recognized for what she truly is",
+          "The knight achieving self-acceptance"
+        ],
+        "temperament": "Deceptive, elegant, volatile",
+        "speech_style": "Melodious, persuasive, using rhetorical questions"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 1,
+        "hostility": 4,
+        "respect": 0
+      },
+      "knows": [
+        "The weaknesses of the player",
+        "The illusion of the final door",
+        "How to break concentration"
+      ],
+      "can_reveal": [
+        "A map of the illusions",
+        "The cost of the final trial"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_last_knight": {
+      "id": "npc_last_knight",
+      "name": "Sir Valerius",
+      "role": "Ghost of the Past",
+      "current_scene": "Chamber of Echoes",
+      "persona": {
+        "voice": "Crackling, like an old fire dying",
+        "motives": [
+          "To warn the current knight of the burden ahead",
+          "To ensure the cycle is broken"
+        ],
+        "fears": [
+          "Repeating the same mistakes",
+          "Failure to protect the realm"
+        ],
+        "temperament": "Nostalgic, weary, determined",
+        "speech_style": "Formal, storytelling, referring to himself in third person"
+      },
+      "relationship_to_player": {
+        "trust": 2,
+        "fear": 1,
+        "hostility": 0,
+        "respect": 3
+      },
+      "knows": [
+        "The prophecy of the key",
+        "The sacrifice required for entry",
+        "The true nature of the portal"
+      ],
+      "can_reveal": [
+        "The name of the true master",
+        "The method to unlock the final seal"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_rusted_key": {
+      "id": "item_rusted_key",
+      "name": "Rusted Key",
+      "description": "A small, corroded key found in the player's pocket, seemingly out of place. It hums faintly when near stone walls.",
+      "category": "artifact"
+    },
+    "item_phantom_mirror": {
+      "id": "item_phantom_mirror",
+      "name": "Phantom Mirror",
+      "description": "A shard of glass that shows not your reflection, but your potential future, shifting like smoke.",
+      "category": "artifact"
+    },
+    "item_tinder_heart": {
+      "id": "item_tinder_heart",
+      "name": "Tinder Heart",
+      "description": "A small, beating ember wrapped in cloth that never goes cold. Used to light dark places.",
+      "category": "consumable"
+    },
+    "item_iron_cord": {
+      "id": "item_iron_cord",
+      "name": "Iron Cord",
+      "description": "A length of flexible metal wire that can bind shadows or cut through illusions.",
+      "category": "tool"
+    }
+  },
+  "skills": {
+    "skill_read_fog": {
+      "id": "skill_read_fog",
+      "name": "Read the Fog",
+      "description": "Allows the player to discern the direction and density of the moving fog, revealing hidden paths or traps.",
+      "category": "general"
+    },
+    "skill_echo_walk": {
+      "id": "skill_echo_walk",
+      "name": "Echo Walk",
+      "description": "Lets the player hear whispers from the environment, granting insights into the history of the current room.",
+      "category": "general"
+    },
+    "skill_resolve_burst": {
+      "id": "skill_resolve_burst",
+      "name": "Resolve Burst",
+      "description": "Temporarily heightens the player's willpower, allowing them to ignore illusions or withstand mental pressure.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1",
+    "current_scene": "scene_cell_wake",
+    "inventory": [],
+    "skills": [
+      "skill_read_fog",
+      "skill_echo_walk",
+      "skill_resolve_burst"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

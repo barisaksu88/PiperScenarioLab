@@ -1,0 +1,278 @@
+{
+  "metadata": {
+    "title": "Test Adventure",
+    "description": "A mysterious bell has been stolen from the village tower. The bellkeeper Mara knows more than she lets on, and the mayor Eldric seems strangely unconcerned. Can you uncover what really lies beneath the hilltop ruins?",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "fantasy_tiny",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "fantasy_tiny",
+    "display_name": "Tiny Fantasy",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "profiles/fantasy_tiny/prompts",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1_arrival": {
+      "id": "act_1_arrival",
+      "name": "Village Arrival",
+      "description": "You arrive at a quiet village where an ancient bell has mysteriously stopped ringing. The villagers whisper of strange happenings at night.",
+      "scenes": {
+        "village_square": {
+          "id": "village_square",
+          "name": "Village Square",
+          "description": "A cobblestone square dominated by an ancient bell tower. The bell hangs silent overhead. Wildflowers grow in the cracks between stones, and a weathered well sits at the center. Paths lead to the bell tower, the mayor's office, and the hilltop ruins.",
+          "connected_scenes": [
+            "bell_tower",
+            "mayor_office",
+            "hilltop_ruins"
+          ],
+          "npcs_present": [
+            "mara_bellkeeper"
+          ],
+          "items_present": [
+            "cracked_silver_medallion"
+          ],
+          "clues_present": [
+            "ash_symbol"
+          ]
+        }
+      },
+      "objectives": {
+        "inspect_village_square": {
+          "id": "inspect_village_square",
+          "description": "Explore the village square and look for clues about the missing bell.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "act_1_complete"
+      ],
+      "ending_narration": ""
+    },
+    "act_2_investigation": {
+      "id": "act_2_investigation",
+      "name": "The Investigation",
+      "description": "Clues point to something deeper than a simple theft. Mara hints at ancient secrets, while Mayor Eldric's behavior grows suspicious.",
+      "scenes": {
+        "bell_tower": {
+          "id": "bell_tower",
+          "name": "Bell Tower",
+          "description": "The interior of the bell tower is filled with dusty relics and old manuscripts. The bell's mounting bracket is broken cleanly, not by force but by precise tools. Scratches on the stone floor suggest something heavy was dragged toward the cellar stairs.",
+          "connected_scenes": [
+            "village_square",
+            "mayor_office"
+          ],
+          "npcs_present": [
+            "mara_bellkeeper"
+          ],
+          "items_present": [],
+          "clues_present": [
+            "old_tracks"
+          ]
+        },
+        "mayor_office": {
+          "id": "mayor_office",
+          "name": "Mayor's Office",
+          "description": "Eldric's office is richly furnished with imported carpets and fine wine — odd luxuries for a village mayor. A locked drawer in his desk rattles when shaken. A draft of cold air seeps from beneath a tapestry on the eastern wall.",
+          "connected_scenes": [
+            "village_square",
+            "bell_tower"
+          ],
+          "npcs_present": [
+            "eldric_mayor"
+          ],
+          "items_present": [],
+          "clues_present": [
+            "hidden_cellar"
+          ]
+        }
+      },
+      "objectives": {
+        "question_mara": {
+          "id": "question_mara",
+          "description": "Get Mara to open up about what she knows regarding the bell.",
+          "status": "active",
+          "required_flags": [
+            "met_mara"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "act_2_complete"
+      ],
+      "ending_narration": ""
+    },
+    "act_3_resolution": {
+      "id": "act_3_resolution",
+      "name": "What Lies Beneath",
+      "description": "The truth is revealed at the hilltop ruins. The bell was no ordinary bell — it was a seal, and its removal has awakened something ancient.",
+      "scenes": {
+        "hilltop_ruins": {
+          "id": "hilltop_ruins",
+          "name": "Hilltop Ruins",
+          "description": "Ancient stone ruins crown the hill overlooking the village. A circle of standing stones surrounds a central altar where fresh ash has been arranged in deliberate patterns. The same symbol from the medallion is etched into every stone. The ground trembles faintly beneath your feet.",
+          "connected_scenes": [
+            "village_square"
+          ],
+          "npcs_present": [],
+          "items_present": [],
+          "clues_present": [
+            "ash_symbol"
+          ]
+        }
+      },
+      "objectives": {
+        "discover_truth": {
+          "id": "discover_truth",
+          "description": "Learn the truth about what the bell was sealing and decide what to do about it.",
+          "status": "active",
+          "required_flags": [
+            "mara_shared_clue"
+          ],
+          "required_clues": [
+            "old_tracks"
+          ]
+        }
+      },
+      "completion_flags": [
+        "act_3_complete"
+      ],
+      "ending_narration": "The ancient seal is restored. The bell rings out once more across the valley — not the mournful silence of before, but a clear, triumphant peal that seems to shake the very stars. Mara weeps openly at your side, no longer the guarded bellkeeper but a woman freed from a generations-old burden. Eldric is gone, fled into the hills with his guilt, though you suspect he will not get far. The village gathers in the square as dawn breaks, and for the first time in a hundred years, the bell tower sings with hope. You have changed this place forever. Whatever road takes you next, the people of this village will remember the stranger who heard the silence and chose to listen deeper."
+    }
+  },
+  "npcs": {
+    "mara_bellkeeper": {
+      "id": "mara_bellkeeper",
+      "name": "Mara",
+      "role": "Bellkeeper",
+      "current_scene": "village_square",
+      "persona": {
+        "voice": "Gruff but melodic, speaks in short sentences",
+        "motives": [
+          "Protect the village secret",
+          "Find someone she can trust"
+        ],
+        "fears": [
+          "The seal being fully broken",
+          "Eldric discovering her disloyalty"
+        ],
+        "temperament": "guarded",
+        "speech_style": "Speaks in short, careful sentences. Uses pauses. Avoids direct answers until trust is earned."
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "bell_was_a_seal",
+        "old_tracks_lead_to_ruins",
+        "ash_symbol_meaning"
+      ],
+      "can_reveal": [
+        "old_tracks",
+        "ash_symbol"
+      ],
+      "triggers": [
+        {
+          "condition": "flag:found_medallion",
+          "effect": "reveal_ash_symbol_clue"
+        }
+      ],
+      "status": "available"
+    },
+    "eldric_mayor": {
+      "id": "eldric_mayor",
+      "name": "Eldric",
+      "role": "Mayor",
+      "current_scene": "mayor_office",
+      "persona": {
+        "voice": "Smooth and practiced, like a merchant",
+        "motives": [
+          "Maintain his secret arrangement",
+          "Keep outsiders from investigating"
+        ],
+        "fears": [
+          "His deal being exposed",
+          "Losing his comfortable position"
+        ],
+        "temperament": "smooth-talking",
+        "speech_style": "Charismatic and deflecting. Uses flattery, changes subjects smoothly, answers questions with questions."
+      },
+      "relationship_to_player": {
+        "trust": 10,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 5
+      },
+      "knows": [
+        "stole_the_bell",
+        "hidden_cellar",
+        "ash_symbol_meaning"
+      ],
+      "can_reveal": [
+        "mayor_lied",
+        "hidden_cellar"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "cracked_silver_medallion": {
+      "id": "cracked_silver_medallion",
+      "name": "Cracked Silver Medallion",
+      "description": "An ancient silver medallion, warm to the touch. One side bears the symbol of a bell; the other shows the same ash pattern found at the ruins. It pulses faintly when pointed toward the hilltop.",
+      "category": "artifact"
+    }
+  },
+  "skills": {
+    "perception": {
+      "id": "perception",
+      "name": "Perception",
+      "description": "Notice hidden details, traps, and clues that others might miss.",
+      "category": "general"
+    },
+    "persuasion": {
+      "id": "persuasion",
+      "name": "Persuasion",
+      "description": "Convince NPCs to share information or take actions through dialogue.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1_arrival",
+    "current_scene": "village_square",
+    "inventory": [],
+    "skills": [
+      "perception",
+      "persuasion"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}

@@ -1,0 +1,424 @@
+{
+  "metadata": {
+    "title": "The Lantern of Lost Time",
+    "description": "A weary traveler finds a lantern that flickers with memories not their own. Upon opening it, the traveler realizes their town is slowly fading into the void.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1_awakening": {
+      "id": "act_1_awakening",
+      "name": "Awakening",
+      "description": "Waking up in a strange village and finding the lantern.",
+      "scenes": {
+        "act_1_awakening": {
+          "id": "act_1_awakening",
+          "name": "Cobblestone Street",
+          "description": "You wake up alone on the street with a glowing lantern in your hand.",
+          "connected_scenes": [
+            "act_1_exploration"
+          ],
+          "npcs_present": [],
+          "items_present": [
+            "item_lantern",
+            "item_watch"
+          ],
+          "clues_present": []
+        },
+        "act_1_exploration": {
+          "id": "act_1_exploration",
+          "name": "Guard Interaction",
+          "description": "You approach the guard to ask about the strange lights.",
+          "connected_scenes": [
+            "act_1_awakening",
+            "act_1_inquiry"
+          ],
+          "npcs_present": [
+            "npc_guard"
+          ],
+          "items_present": [
+            "item_lantern"
+          ],
+          "clues_present": []
+        },
+        "act_1_inquiry": {
+          "id": "act_1_inquiry",
+          "name": "Shopkeeper Talk",
+          "description": "You visit the shopkeeper who claims the lantern is fading.",
+          "connected_scenes": [
+            "act_1_exploration",
+            "act_2_investigation",
+            "act_2_confrontation"
+          ],
+          "npcs_present": [
+            "npc_shopkeeper"
+          ],
+          "items_present": [
+            "item_lantern"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_1_lantern": {
+          "id": "obj_1_lantern",
+          "description": "Locate the lantern on the street.",
+          "status": "active",
+          "required_flags": [
+            "flag_lantern_found"
+          ],
+          "required_clues": []
+        },
+        "obj_1_guard": {
+          "id": "obj_1_guard",
+          "description": "Talk to the guard about the fading town.",
+          "status": "active",
+          "required_flags": [
+            "flag_guard_spoken"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_act_1_complete"
+      ],
+      "ending_narration": ""
+    },
+    "act_2_mystery": {
+      "id": "act_2_mystery",
+      "name": "The Mystery",
+      "description": "Investigating the fading town and finding the culprit.",
+      "scenes": {
+        "act_2_investigation": {
+          "id": "act_2_investigation",
+          "name": "Elder's Wisdom",
+          "description": "You speak with the elder regarding the key to the town.",
+          "connected_scenes": [
+            "act_1_inquiry",
+            "act_2_confrontation"
+          ],
+          "npcs_present": [
+            "npc_elder"
+          ],
+          "items_present": [
+            "item_key"
+          ],
+          "clues_present": []
+        },
+        "act_2_confrontation": {
+          "id": "act_2_confrontation",
+          "name": "Child Confrontation",
+          "description": "You meet the child who hides the secret of the lantern.",
+          "connected_scenes": [
+            "act_2_investigation",
+            "act_3_decision",
+            "act_1_inquiry"
+          ],
+          "npcs_present": [
+            "npc_child"
+          ],
+          "items_present": [
+            "item_key"
+          ],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_2_key": {
+          "id": "obj_2_key",
+          "description": "Obtain the key to unlock the lantern.",
+          "status": "active",
+          "required_flags": [
+            "flag_key_obtained"
+          ],
+          "required_clues": []
+        },
+        "obj_2_culprit": {
+          "id": "obj_2_culprit",
+          "description": "Identify the magical culprit stealing time.",
+          "status": "active",
+          "required_flags": [
+            "flag_culprit_identified"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_act_2_complete"
+      ],
+      "ending_narration": ""
+    },
+    "act_3_resolution": {
+      "id": "act_3_resolution",
+      "name": "Resolution",
+      "description": "Sacrificing the lantern to restore reality.",
+      "scenes": {
+        "act_3_decision": {
+          "id": "act_3_decision",
+          "name": "Final Sacrifice",
+          "description": "You decide to sacrifice the lantern to restore the town.",
+          "connected_scenes": [
+            "act_2_confrontation",
+            "act_3_restoration"
+          ],
+          "npcs_present": [
+            "npc_guard"
+          ],
+          "items_present": [
+            "item_lantern"
+          ],
+          "clues_present": []
+        },
+        "act_3_restoration": {
+          "id": "act_3_restoration",
+          "name": "Morning Silence",
+          "description": "The town is restored, but the lantern is gone into the light.",
+          "connected_scenes": [
+            "act_3_decision"
+          ],
+          "npcs_present": [
+            "npc_shopkeeper"
+          ],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_3_sacrifice": {
+          "id": "obj_3_sacrifice",
+          "description": "Sacrifice the lantern to restore reality.",
+          "status": "active",
+          "required_flags": [
+            "flag_sacrifice_made"
+          ],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_act_3_complete"
+      ],
+      "ending_narration": "The town breathes again as the lantern fades into the morning mist. Silence replaces the fading sounds, marking the end of the lost time."
+    }
+  },
+  "npcs": {
+    "npc_elder": {
+      "id": "npc_elder",
+      "name": "Elder Thorne",
+      "role": "Village Keeper",
+      "current_scene": "village_square",
+      "persona": {
+        "voice": "Distant, weary",
+        "motives": [
+          "Protect the town's memory",
+          "Preserve the lantern's secret"
+        ],
+        "fears": [
+          "Being forgotten",
+          "The time running out"
+        ],
+        "temperament": "Melancholic",
+        "speech_style": "Formal, slow"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "The lantern drains time",
+        "The town is fading",
+        "The sacrifice is required"
+      ],
+      "can_reveal": [
+        "The lantern's origin",
+        "The path to the culprit"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_shopkeeper": {
+      "id": "npc_shopkeeper",
+      "name": "Grimm",
+      "role": "Merchant",
+      "current_scene": "market_stall",
+      "persona": {
+        "voice": "Bland, transactional",
+        "motives": [
+          "Profit from the lantern",
+          "Avoid the fading"
+        ],
+        "fears": [
+          "The lantern's power",
+          "The town disappearing"
+        ],
+        "temperament": "Cautious",
+        "speech_style": "Short, direct"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 1,
+        "respect": 0
+      },
+      "knows": [
+        "The lantern costs time",
+        "Silence is the price"
+      ],
+      "can_reveal": [
+        "Hidden items in the shop",
+        "The location of the culprit"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_guard": {
+      "id": "npc_guard",
+      "name": "Silas",
+      "role": "Guard",
+      "current_scene": "main_gate",
+      "persona": {
+        "voice": "Authoritative, sharp",
+        "motives": [
+          "Keep outsiders out",
+          "Maintain order"
+        ],
+        "fears": [
+          "Chaos",
+          "The fading town"
+        ],
+        "temperament": "Stiff",
+        "speech_style": "Imperative"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 1,
+        "respect": 0
+      },
+      "knows": [
+        "The lantern is dangerous",
+        "The rules of the village"
+      ],
+      "can_reveal": [
+        "Guard duty schedule",
+        "The gate key"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_child": {
+      "id": "npc_child",
+      "name": "Lily",
+      "role": "Witness",
+      "current_scene": "park",
+      "persona": {
+        "voice": "Honest, curious",
+        "motives": [
+          "Play",
+          "Remember the stories"
+        ],
+        "fears": [
+          "The dark",
+          "Being alone"
+        ],
+        "temperament": "Innocent",
+        "speech_style": "Simple, innocent"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "The lantern lights up at night",
+        "The town used to be bright"
+      ],
+      "can_reveal": [
+        "Memories of the past",
+        "The lantern's glow"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_lantern": {
+      "id": "item_lantern",
+      "name": "Lantern of Lost Time",
+      "description": "A glowing vessel containing stolen moments that drains the town's existence.",
+      "category": "artifact"
+    },
+    "item_watch": {
+      "id": "item_watch",
+      "name": "Broken Chronometer",
+      "description": "A pocket watch that stops ticking the moment the lantern is activated.",
+      "category": "tool"
+    },
+    "item_key": {
+      "id": "item_key",
+      "name": "Old Key",
+      "description": "A rusted iron key that unlocks the secret passage to the culprit.",
+      "category": "tool"
+    }
+  },
+  "skills": {
+    "skill_void_sense": {
+      "id": "skill_void_sense",
+      "name": "Sense the Void",
+      "description": "Perceives magical corruption and time drain in the environment.",
+      "category": "general"
+    },
+    "skill_memory_recall": {
+      "id": "skill_memory_recall",
+      "name": "Echo Memory",
+      "description": "Accesses fragmented memories of the town's past through objects.",
+      "category": "general"
+    },
+    "skill_sacrifice_bond": {
+      "id": "skill_sacrifice_bond",
+      "name": "Bond of Sacrifice",
+      "description": "The ability to offer one's own time to restore reality.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1_awakening",
+    "current_scene": "act_1_awakening",
+    "inventory": [],
+    "skills": [
+      "skill_void_sense",
+      "skill_memory_recall",
+      "skill_sacrifice_bond"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}
