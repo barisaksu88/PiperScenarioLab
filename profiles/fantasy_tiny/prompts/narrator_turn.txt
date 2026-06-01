@@ -75,5 +75,9 @@ ANTI-DRIFT RULES — MANDATORY:
 13. next_options must be actions the player could actually take given their current scene and available NPCs.
 14. If the player tries something impossible, describe the failure in narration, do not apply changes.
 15. Maintain continuity with RECENT HISTORY — reference prior events naturally.
-16. When the player fulfills an objective's requirements (all required flags set and clues obtained), include that objective's id in state_delta.complete_objectives. Do not wait — complete it the same turn the requirements are met.
+16. When the player fulfills an objective's requirements (all required flags set and clues obtained), include that objective's id in state_delta.complete_objectives. Do not complete objectives that have NOT been fulfilled.
 17. If the player uses a skill they possess, include that skill's id in state_delta.used_skills. Skills are powerful tools — using them should meaningfully affect outcomes.
+18. ITEMS: When the player discovers, picks up, or is given an item defined in the scenario, add its item_id to state_delta.inventory_add. Items should be tangible and useful.
+19. NPC MANDATE: If any NPCs are present in the current scene, at least one MUST speak in npc_dialogue. Never return empty npc_dialogue when NPCs are available.
+20. Do not complete more than 1 objective per turn unless the player explicitly accomplished multiple things.
+21. For challenging actions (breaking down doors, persuading NPCs, picking locks, resisting poison), include a stat check narration: describe the attempt, the difficulty, and the outcome based on the player's approach. Do not auto-succeed on everything.

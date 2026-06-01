@@ -85,6 +85,12 @@ class Repair:
         """Parse model text into a TurnProposal, repairing once if needed."""
         extracted = self.extract_json(broken)
         if extracted is not None:
+            # Check if the LLM nested the entire TurnProposal inside the narration field
+            narration = extracted.get("narration", "")
+            if isinstance(narration, str) and narration.strip().startswith("{") and '"narration"' in narration:
+                nested = self.extract_json(narration)
+                if nested is not None and isinstance(nested, dict) and "narration" in nested:
+                    extracted = nested
             try:
                 proposal = TurnProposal.model_validate(extracted)
                 # Scrub any LLM artifacts that leaked into the narration field

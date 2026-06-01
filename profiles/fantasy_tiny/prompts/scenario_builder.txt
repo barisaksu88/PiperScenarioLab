@@ -114,8 +114,11 @@ ANTI-DRIFT RULES:
 - NPC speech_style must be specific and distinctive.
 - Scene descriptions must include sensory details (sights, sounds, smells).
 - Objectives must be achievable with the clues and flags defined in the scenario.
-- Keep the scenario small: 2-3 acts, 2-4 scenes per act, 2-4 NPCs total, 1-3 items, 2-4 skills.
-- The scenario should be completable in 15-30 minutes.
+- Keep the scenario substantial: 3-5 acts, 3-5 scenes per act, 4-8 NPCs total, 4-8 items, 4-8 skills.
+- Each act should require multiple turns to complete (minimum 3-5 turns per act).
+- Objectives should require item usage, NPC dialogue, or exploration — not just flag-setting.
+- Items must be placed in scenes and discoverable; some items should be required to progress.
+- The scenario should take 30-60 minutes to complete.
 - Player starts with appropriate skills for the genre.
 - Each clue should be discoverable by examining the right scene or talking to the right NPC.
 
