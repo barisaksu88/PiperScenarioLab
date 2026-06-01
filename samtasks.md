@@ -50,6 +50,9 @@
 - [x] `SCENARIO_HOST`/`SCENARIO_PORT` env vars for uvicorn binding
 - [x] `.gitignore` ignores generated scenarios (keeps built-in samples)
 - [x] Engine starts in act_1/scene_1 instead of "new_game" state
+- [x] Duplicate stats/time-of-day in UI fixed (renderSidebar builds innerHTML directly)
+- [x] Minimum turns per act enforced (MIN_TURNS_PER_ACT=3)
+- [x] JSON nesting bug in repair.py fixed (detects TurnProposal inside narration field)
 - [x] Duplicate stats/time-of-day in UI fixed (clear old elements before rendering new ones)
 
 ---
@@ -57,15 +60,13 @@
 ## 2. IN PROGRESS / NEEDS WORK
 
 ### Important: Game Still Short (Needs Longer Scenarios)
-**Problem:** Even with larger scenarios, the game can complete in 3-5 turns if the LLM auto-completes objectives aggressively.
-**Status:** Narrator prompt now prevents auto-completing >1 objective per turn. Scenario builder generates larger scenarios. But the LLM may still be too generous.
-**Fix Plan:**
-- [ ] **Add minimum turns per act** — engine should not auto-complete act until minimum 3 turns passed
-- [ ] **Add item-gating to objectives** — objectives should require finding/using specific items (LLM-generated scenarios now have items, but engine doesn't enforce item-gating)
+**Status:** ✅ Minimum turns per act enforced (MIN_TURNS_PER_ACT=3). Narrator prompt prevents auto-completing >1 objective per turn. Scenario builder generates larger scenarios. But the LLM may still be too generous.
+**Remaining:**
+- [ ] **Add item-gating to objectives** — objectives should require finding/using specific items (engine doesn't enforce item-gating yet)
 - [ ] **Add clue prerequisites to objectives** — some objectives require clues from previous acts
 
 ### Important: Items Need More Purpose
-**Status:** Auto-pickup works, items are added to inventory, `/api/use_item` endpoint exists. But:
+**Status:** ✅ Auto-pickup works, items added to inventory, `/api/use_item` endpoint exists, UI shows Use buttons for usable items. But:
 - LLM may not consistently generate `inventory_add` in state_delta
 - Items don't have mechanical effects on gameplay (no stat bonuses, no locked doors that require keys)
 **Fix Plan:**
@@ -74,7 +75,7 @@
 - [ ] **Add locked content requiring items** — e.g., door requires Rusted Iron Key to open
 
 ### Important: NPCs Still Need More Life
-**Status:** NPCs now have schedules and move between scenes based on time. Narrator prompt mandates they speak when present. But:
+**Status:** ✅ NPCs now have schedules and move between scenes based on time. Narrator prompt mandates they speak when present. But:
 - Relationship changes are still invisible to the player (no UI)
 - No NPC-initiated dialogue (player always acts first)
 - NPCs don't have daily routines visible in UI
@@ -131,6 +132,7 @@
 | 280c81d | Ignore generated scenario JSONs, keep built-in samples |
 | 5c7baa1 | Add D&D-style stats, item usage, NPC scheduling, time-of-day system |
 | bdc7ef3 | Fix duplicate stats/time-of-day in UI; add cleanup on renderSidebar |
+| a3e2c8d | Fix duplicate stats/time-of-day accumulation; add min turns per act enforcement |
 
 ---
 
