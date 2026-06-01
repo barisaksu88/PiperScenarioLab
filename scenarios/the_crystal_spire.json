@@ -1,0 +1,358 @@
+{
+  "metadata": {
+    "title": "The Crystal Spire",
+    "description": "A traveler must navigate a transient tower that materializes only under the cover of midnight to uncover its secrets before the sun rises. Time is your only ally in this fleeting, mysterious encounter.",
+    "author": "PiperScenarioLab",
+    "version": "1.0",
+    "profile_id": "generated",
+    "difficulty": "easy",
+    "estimated_duration_minutes": 15
+  },
+  "profile": {
+    "profile_id": "generated",
+    "display_name": "Generated",
+    "allowed_dynamic_creation": [
+      "flags"
+    ],
+    "validation_rules": {
+      "allow_dynamic_flags": true,
+      "max_inventory": 20
+    },
+    "prompt_template_dir": "",
+    "ui_labels": {
+      "acts_label": "Acts",
+      "scenes_label": "Locations",
+      "npcs_label": "Characters",
+      "items_label": "Inventory",
+      "skills_label": "Abilities",
+      "clues_label": "Clues"
+    },
+    "state_extensions": {}
+  },
+  "acts": {
+    "act_1": {
+      "id": "act_1",
+      "name": "The Arrival",
+      "description": "The protagonist encounters the mysterious spire and begins the journey.",
+      "scenes": {
+        "scene_1": {
+          "id": "scene_1",
+          "name": "Moonlit Edge",
+          "description": "The jagged spire materializes from the darkness behind you.",
+          "connected_scenes": [
+            "scene_2"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": []
+        },
+        "scene_2": {
+          "id": "scene_2",
+          "name": "The First Gate",
+          "description": "A shimmering barrier blocks the path to the tower.",
+          "connected_scenes": [
+            "scene_1",
+            "scene_3"
+          ],
+          "npcs_present": [
+            "npc_02"
+          ],
+          "items_present": [
+            "item_02"
+          ],
+          "clues_present": [
+            "clue_entrance"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_1": {
+          "id": "obj_1",
+          "description": "Approach the spire without triggering the defensive wards.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_entered_spire"
+      ],
+      "ending_narration": ""
+    },
+    "act_2": {
+      "id": "act_2",
+      "name": "The Labyrinth of Riddles",
+      "description": "Inside the tower, the protagonist solves riddles to unlock inner chambers.",
+      "scenes": {
+        "scene_3": {
+          "id": "scene_3",
+          "name": "The Hall of Echoes",
+          "description": "A riddle speaks in the voice of an ancient master.",
+          "connected_scenes": [
+            "scene_2",
+            "scene_4"
+          ],
+          "npcs_present": [
+            "npc_03"
+          ],
+          "items_present": [
+            "item_03"
+          ],
+          "clues_present": [
+            "clue_riddle"
+          ]
+        },
+        "scene_4": {
+          "id": "scene_4",
+          "name": "The Inner Sanctum",
+          "description": "The final riddle is solved, revealing the path to the summit.",
+          "connected_scenes": [
+            "scene_3",
+            "scene_5"
+          ],
+          "npcs_present": [
+            "npc_01"
+          ],
+          "items_present": [
+            "item_04"
+          ],
+          "clues_present": [
+            "clue_summit"
+          ]
+        }
+      },
+      "objectives": {
+        "obj_2": {
+          "id": "obj_2",
+          "description": "Answer the riddles correctly to unlock the summit.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": [
+            "clue_riddle",
+            "clue_summit"
+          ]
+        }
+      },
+      "completion_flags": [
+        "flag_reached_summit"
+      ],
+      "ending_narration": ""
+    },
+    "act_3": {
+      "id": "act_3",
+      "name": "The Departure",
+      "description": "The sun rises, and the protagonist claims their reward before the tower fades.",
+      "scenes": {
+        "scene_5": {
+          "id": "scene_5",
+          "name": "The Dawn's Touch",
+          "description": "The crystal tower begins to dissolve as light hits it.",
+          "connected_scenes": [
+            "scene_4",
+            "scene_6"
+          ],
+          "npcs_present": [
+            "npc_02"
+          ],
+          "items_present": [
+            "item_01"
+          ],
+          "clues_present": []
+        },
+        "scene_6": {
+          "id": "scene_6",
+          "name": "The Hidden Gift",
+          "description": "The protagonist takes the glowing shard before the tower vanishes.",
+          "connected_scenes": [
+            "scene_5"
+          ],
+          "npcs_present": [],
+          "items_present": [],
+          "clues_present": []
+        }
+      },
+      "objectives": {
+        "obj_3": {
+          "id": "obj_3",
+          "description": "Retrieve the hidden gift before the tower disappears.",
+          "status": "active",
+          "required_flags": [],
+          "required_clues": []
+        }
+      },
+      "completion_flags": [
+        "flag_complete"
+      ],
+      "ending_narration": "The sun crests the horizon, causing the tower to dissolve into mist, leaving you with a glowing shard of crystal as the only reminder of your visit. You stand alone in the morning light, the memory of the spire fading with the night, but the shard humming a silent promise in your palm."
+    }
+  },
+  "npcs": {
+    "npc_01": {
+      "id": "npc_01",
+      "name": "The Whispering Architect",
+      "role": "Gatekeeper",
+      "current_scene": "Entrance of the Spire",
+      "persona": {
+        "voice": "Echoing and layered like multiple voices speaking in unison",
+        "motives": [
+          "To preserve the Spire's secrets",
+          "To test worthy travelers"
+        ],
+        "fears": [
+          "Being forgotten",
+          "The Spire collapsing"
+        ],
+        "temperament": "Patient, cryptic, and unyielding",
+        "speech_style": "Riddles mixed with geometric metaphors"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 5,
+        "respect": 2
+      },
+      "knows": [
+        "The nature of the Riddle of Time",
+        "The location of the hidden gift"
+      ],
+      "can_reveal": [
+        "The answer to the first riddle if a sacrifice is made",
+        "A clue about the exit"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_02": {
+      "id": "npc_02",
+      "name": "Lumina, the Shadow Stalker",
+      "role": "Guardian",
+      "current_scene": "Upper Corridors",
+      "persona": {
+        "voice": "Soft, melodic, but with sudden sharp cracks",
+        "motives": [
+          "To protect the core from corruption",
+          "To guide the chosen one"
+        ],
+        "fears": [
+          "Darkness consuming the light",
+          "Failure of the cycle"
+        ],
+        "temperament": "Volatile, observant, and protective",
+        "speech_style": "Poetic with sudden bursts of urgency"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 10,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "The weakness of the Shadow Stalkers",
+        "The path to the Core"
+      ],
+      "can_reveal": [
+        "A shortcut through the shadows"
+      ],
+      "triggers": [],
+      "status": "available"
+    },
+    "npc_03": {
+      "id": "npc_03",
+      "name": "Echo of the First",
+      "role": "Spirit Guide",
+      "current_scene": "The Core Chamber",
+      "persona": {
+        "voice": "Ancient, deep, resonating in the bones",
+        "motives": [
+          "To complete the final test of the soul",
+          "To pass on the legacy"
+        ],
+        "fears": [
+          "The end of the cycle",
+          "A hollow successor"
+        ],
+        "temperament": "Serene, wise, and detached",
+        "speech_style": "Slow, deliberate, and prophetic"
+      },
+      "relationship_to_player": {
+        "trust": 0,
+        "fear": 0,
+        "hostility": 0,
+        "respect": 0
+      },
+      "knows": [
+        "The true cost of the gift",
+        "The nature of the Crystal Spire"
+      ],
+      "can_reveal": [
+        "The final riddle's solution"
+      ],
+      "triggers": [],
+      "status": "available"
+    }
+  },
+  "items": {
+    "item_01": {
+      "id": "item_01",
+      "name": "Shard of Dawn",
+      "description": "A glowing, jagged piece of crystal that pulses with the rhythm of a heartbeat. It is warm to the touch and hums when near other crystals.",
+      "category": "artifact"
+    },
+    "item_02": {
+      "id": "item_02",
+      "name": "Chronos Compass",
+      "description": "A brass compass that points not North, but towards the nearest moment of significance. The needle spins wildly near the Spire.",
+      "category": "tool"
+    },
+    "item_03": {
+      "id": "item_03",
+      "name": "Vial of Starlight",
+      "description": "A small glass vial containing a swirling blue liquid that never seems to decrease. It can be used to illuminate dark spaces or hide one's presence.",
+      "category": "consumable"
+    },
+    "item_04": {
+      "id": "item_04",
+      "name": "Tapestry of Threads",
+      "description": "A woven fabric made of light and shadow. It can be used to create temporary bridges or masks to confuse enemies.",
+      "category": "general"
+    }
+  },
+  "skills": {
+    "skill_01": {
+      "id": "skill_01",
+      "name": "Crystal Resonance",
+      "description": "Allows the player to sense the structural integrity of crystals and riddle patterns, providing insight into the Spire's puzzles.",
+      "category": "general"
+    },
+    "skill_02": {
+      "id": "skill_02",
+      "name": "Midnight Stalking",
+      "description": "Grants the ability to move silently through moonlit areas and remain undetected by shadow creatures.",
+      "category": "general"
+    },
+    "skill_03": {
+      "id": "skill_03",
+      "name": "Riddle Weaver",
+      "description": "Enhances the player's ability to interpret cryptic language and solve riddles based on their emotional and intellectual connection.",
+      "category": "general"
+    }
+  },
+  "player": {
+    "current_act": "act_1",
+    "current_scene": "scene_1",
+    "inventory": [],
+    "skills": [
+      "skill_01",
+      "skill_02",
+      "skill_03"
+    ],
+    "clues": [],
+    "flags": {}
+  },
+  "global_flags": {},
+  "extensions": {}
+}
