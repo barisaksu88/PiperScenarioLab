@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -9,6 +10,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from scenario_engine.models import Scenario, TurnProposal
@@ -301,6 +303,43 @@ class PiperLLMAdapter(LLMClient):
     def timeout_seconds(self) -> float:
         return float(self.config["timeout_seconds"])
 
+    @property
+    def _cache_dir(self) -> Path:
+        return Path(os.environ.get("SCENARIO_LLM_CACHE_DIR", ".cache/llm_responses"))
+
+    def _cache_key(self, payload: Dict[str, Any]) -> str:
+        """Hash the payload to create a cache key."""
+        canonical = json.dumps(payload, sort_keys=True, ensure_ascii=True)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    def _get_cached(self, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Return cached response if available, else None."""
+        if os.environ.get("SCENARIO_LLM_CACHE", "0") != "1":
+            return None
+        key = self._cache_key(payload)
+        path = self._cache_dir / f"{key}.json"
+        if path.exists():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                LOG.debug("LLM cache hit: %s", key[:16])
+                return data
+            except Exception:
+                pass
+        return None
+
+    def _save_cached(self, payload: Dict[str, Any], response: Dict[str, Any]) -> None:
+        """Save response to disk cache."""
+        if os.environ.get("SCENARIO_LLM_CACHE", "0") != "1":
+            return
+        self._cache_dir.mkdir(parents=True, exist_ok=True)
+        key = self._cache_key(payload)
+        path = self._cache_dir / f"{key}.json"
+        try:
+            path.write_text(json.dumps(response, ensure_ascii=False, indent=2), encoding="utf-8")
+            LOG.debug("LLM cache saved: %s", key[:16])
+        except Exception as exc:
+            LOG.warning("Failed to save LLM cache: %s", exc)
+
     def build_messages(self, prompt: str) -> List[Dict[str, str]]:
         return [
             {
@@ -436,6 +475,10 @@ class PiperLLMAdapter(LLMClient):
         return dialogue if isinstance(dialogue, list) else []
 
     async def _post_json(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        cached = self._get_cached(payload)
+        if cached is not None:
+            return cached
+
         url = self.base_url.rstrip("/") + "/v1/chat/completions"
         body = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -450,9 +493,11 @@ class PiperLLMAdapter(LLMClient):
         except urllib.error.URLError as exc:
             raise LLMClientError(f"Unable to reach local LLM at {self.base_url}: {exc}") from exc
         try:
-            return json.loads(data)
+            response = json.loads(data)
         except json.JSONDecodeError as exc:
             raise LLMClientError(f"Local LLM returned invalid JSON payload: {exc}") from exc
+        self._save_cached(payload, response)
+        return response
 
     @staticmethod
     def _extract_content(response: Dict[str, Any]) -> str:

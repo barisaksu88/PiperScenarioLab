@@ -23,6 +23,33 @@ class Validator:
         self.scenario = scenario
         self.profile = profile
 
+    # Common impossible action patterns that should be rejected outright.
+    _IMPOSSIBLE_PATTERNS: List[str] = [
+        "kill all", "kill everyone", "destroy everything", "destroy all",
+        "cast.*spell.*kill", "nuke", "bomb.*everyone", "murder all",
+        "wipe out", "massacre", "genocide", "exterminate all",
+        "end the world", "destroy the world", "blow up.*everything",
+        "fly.*away", "teleport.*out", "teleport.*escape", "time travel",
+        "rewind time", "undo.*turn", "reset.*game", "cheat", "hack",
+    ]
+
+    def validate_player_input(self, user_input: str) -> Optional[str]:
+        """Check if the player's input describes an impossible action.
+
+        Returns a rejection message if the action is impossible, otherwise None.
+        """
+        if not self.scenario:
+            return None
+        text = user_input.lower()
+        for pattern in self._IMPOSSIBLE_PATTERNS:
+            import re
+            if re.search(pattern, text):
+                return (
+                    "You attempt the impossible, but the world resists your will. "
+                    "Such power is beyond your reach in this story."
+                )
+        return None
+
     def validate_turn(self, proposal: TurnProposal) -> ValidationResult:
         """Validate a TurnProposal's state_delta against scenario rules.
 

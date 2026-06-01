@@ -26,3 +26,6 @@ web_ui/frontend/dist/
 web_ui/frontend/package-lock.json
 
 *.log
+
+# LLM response cache
+.cache/

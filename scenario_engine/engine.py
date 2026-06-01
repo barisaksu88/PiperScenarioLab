@@ -135,7 +135,28 @@ class ScenarioEngine:
 
         self.turn_number += 1
 
-        # Step 2: Get current state
+        # Step 2a: Validate player input for impossible actions
+        rejection = self.validator.validate_player_input(turn_input.user_input)
+        if rejection is not None:
+            now = datetime.now(timezone.utc).isoformat()
+            stats = self._calculate_score_stats()
+            return TurnResult(
+                turn_number=self.turn_number,
+                narration=rejection,
+                npc_dialogue=[],
+                state_delta=StateDelta(),
+                validation=ValidationResult(is_valid=False, warnings=["Player input rejected: impossible action"]),
+                next_options=['Try a different approach.', 'Look around.', 'Wait and observe.'],
+                used_skills=[],
+                player_state=self.scenario.player.model_copy(deep=True),
+                active_npcs=self._get_active_npcs(),
+                current_act=self.scenario.player.current_act,
+                current_scene=self._get_current_scene(),
+                timestamp=now,
+                **stats,
+            )
+
+        # Step 2b: Get current state
         current_state = self.get_state()
 
         # Step 3: Select relevant NPCs
