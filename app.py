@@ -15,10 +15,12 @@ from scenario_engine.engine import ScenarioEngine
 from scenario_engine.llm_client import LLMClient, LLMMode, PiperLLMAdapter
 from scenario_engine.models import (
     APIResponse,
+    Item,
     Scenario,
     ScenariosListResponse,
     SessionLogEntry,
     SessionStateResponse,
+    StateDelta,
     TurnInput,
     TurnResult,
 )
@@ -143,6 +145,10 @@ class GenerateScenarioRequest(BaseModel):
     difficulty: str = "medium"
     tone: str = "mysterious"
     theme: str = ""
+
+
+class UseItemRequest(BaseModel):
+    item_id: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -365,6 +371,38 @@ async def take_turn(request: Request, body: TurnInput):
     try:
         result = await engine.take_turn(body)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/use_item", response_model=TurnResult)
+async def use_item(request: Request, body: UseItemRequest):
+    """Use an item from the player's inventory. Returns a TurnResult describing the effect."""
+    engine = _get_engine(request)
+    if not engine.scenario:
+        raise HTTPException(status_code=400, detail="No scenario loaded")
+    try:
+        player = engine.scenario.player
+        if body.item_id not in player.inventory:
+            raise HTTPException(status_code=400, detail="Item not in inventory")
+        item = engine.scenario.items.get(body.item_id)
+        if not item:
+            raise HTTPException(status_code=400, detail="Item not found in scenario")
+        if not item.usable:
+            raise HTTPException(status_code=400, detail="Item cannot be used")
+
+        # Build a synthetic turn input that triggers the LLM to narrate item usage
+        use_prompt = f"Use {item.name}"
+        from scenario_engine.models import TurnInput
+        result = await engine.take_turn(TurnInput(user_input=use_prompt))
+
+        # If consumable, remove from inventory after successful use
+        if item.consumable and body.item_id in player.inventory:
+            player.inventory.remove(body.item_id)
+
+        return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

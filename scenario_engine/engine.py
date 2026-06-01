@@ -14,6 +14,7 @@ from scenario_engine.debug import get_current_debug_run_dir, snapshot_state, wri
 from scenario_engine.llm_client import LLMClient
 from scenario_engine.models import (
     Act,
+    CharacterStats,
     DialogueLine,
     NPC,
     PlayerState,
@@ -70,8 +71,69 @@ class ScenarioEngine:
         self.actor_selector = ActorSelector(self.scenario)
         self.turn_number = 0
 
+        # Initialize player stats if not present
+        if self.scenario is not None:
+            if self.scenario.player.stats is None:
+                self.scenario.player.stats = self._generate_character_stats()
+            # Auto-pickup items in starting scene
+            self._auto_pickup_items_in_current_scene()
+            # Set NPCs to their initial scene positions
+            self._update_npc_positions_by_schedule()
+
         initial_state = self._build_session_state_dict()
         self.storage.save_session(self.session_id, initial_state)
+
+    def _generate_character_stats(self) -> CharacterStats:
+        """Generate D&D-style character stats using 3d6 drop lowest (total 9-18 per stat)."""
+        import random
+        def roll_stat() -> int:
+            rolls = sorted([random.randint(1, 6) for _ in range(4)])
+            return sum(rolls[1:])  # drop lowest
+        con = roll_stat()
+        max_hp = 10 + (con - 10) // 2  # D&D 5e style: 10 + CON modifier
+        return CharacterStats(
+            strength=roll_stat(),
+            dexterity=roll_stat(),
+            constitution=con,
+            intelligence=roll_stat(),
+            wisdom=roll_stat(),
+            charisma=roll_stat(),
+            hp=max_hp,
+            max_hp=max_hp,
+            xp=0,
+            level=1,
+        )
+
+    def _auto_pickup_items_in_current_scene(self) -> None:
+        """Automatically add items_present in current scene to player inventory if not yet picked up."""
+        if self.scenario is None:
+            return
+        current_scene = self._get_current_scene()
+        if current_scene is None:
+            return
+        for item_id in current_scene.items_present:
+            if item_id not in self.scenario.player.picked_up_items:
+                if item_id not in self.scenario.player.inventory:
+                    self.scenario.player.inventory.append(item_id)
+                self.scenario.player.picked_up_items.append(item_id)
+
+    def _advance_time_of_day(self) -> None:
+        """Advance time of day after each turn."""
+        cycle = ["morning", "afternoon", "evening", "night"]
+        if self.scenario is None:
+            return
+        current = self.scenario.player.time_of_day or "morning"
+        idx = cycle.index(current) if current in cycle else 0
+        self.scenario.player.time_of_day = cycle[(idx + 1) % len(cycle)]
+
+    def _update_npc_positions_by_schedule(self) -> None:
+        """Move NPCs to their scheduled scene based on current time of day."""
+        if self.scenario is None:
+            return
+        current_time = self.scenario.player.time_of_day or "morning"
+        for npc in self.scenario.npcs.values():
+            if npc.schedule and current_time in npc.schedule:
+                npc.current_scene = npc.schedule[current_time]
 
     async def load_session(self, session_id: str) -> None:
         """Restore a previously saved session.
@@ -224,6 +286,10 @@ class ScenarioEngine:
 
         # Step 7: Apply accepted state delta
         self._apply_state_delta(validation.accepted_delta)
+
+        # Step 7b: Advance time of day and update NPC positions
+        self._advance_time_of_day()
+        self._update_npc_positions_by_schedule()
 
         # Step 8: Process dialogue
         current_scene_id = self.scenario.player.current_scene
@@ -489,6 +555,8 @@ class ScenarioEngine:
             turn_number=self.turn_number,
             ending=ending,
             session_id=self.session_id,
+            stats=self.scenario.player.stats,
+            time_of_day=self.scenario.player.time_of_day,
             **stats,
         )
 
@@ -629,6 +697,25 @@ class ScenarioEngine:
 
         # Replace placeholders
         prompt = template
+        # Get player stats for prompt
+        stats_str = "(none)"
+        stats_hp_str = "0"
+        stats_max_hp_str = "0"
+        stats_level_str = "1"
+        stats_xp_str = "0"
+        if self.scenario.player.stats is not None:
+            stats = self.scenario.player.stats
+            stats_str = (
+                f"STR {stats.strength}, DEX {stats.dexterity}, CON {stats.constitution}, "
+                f"INT {stats.intelligence}, WIS {stats.wisdom}, CHA {stats.charisma}"
+            )
+            stats_hp_str = str(stats.hp)
+            stats_max_hp_str = str(stats.max_hp)
+            stats_level_str = str(stats.level)
+            stats_xp_str = str(stats.xp)
+
+        time_of_day = self.scenario.player.time_of_day or "morning"
+
         replacements = {
             "{scenario_title}": self.scenario.metadata.title,
             "{current_act}": act_name,
@@ -644,6 +731,18 @@ class ScenarioEngine:
             "{completion_flags}": completion_flags_str,
             "{recent_log}": recent_log,
             "{user_input}": turn_input.user_input,
+            "{stats}": stats_str,
+            "{stats_strength}": str(self.scenario.player.stats.strength) if self.scenario.player.stats else "10",
+            "{stats_dexterity}": str(self.scenario.player.stats.dexterity) if self.scenario.player.stats else "10",
+            "{stats_constitution}": str(self.scenario.player.stats.constitution) if self.scenario.player.stats else "10",
+            "{stats_intelligence}": str(self.scenario.player.stats.intelligence) if self.scenario.player.stats else "10",
+            "{stats_wisdom}": str(self.scenario.player.stats.wisdom) if self.scenario.player.stats else "10",
+            "{stats_charisma}": str(self.scenario.player.stats.charisma) if self.scenario.player.stats else "10",
+            "{stats_hp}": stats_hp_str,
+            "{stats_max_hp}": stats_max_hp_str,
+            "{stats_level}": stats_level_str,
+            "{stats_xp}": stats_xp_str,
+            "{time_of_day}": time_of_day,
         }
         for placeholder, value in replacements.items():
             prompt = prompt.replace(placeholder, value)
@@ -734,6 +833,33 @@ class ScenarioEngine:
         # Move player to scene
         if delta.move_player_to_scene is not None:
             self.scenario.player.current_scene = delta.move_player_to_scene
+            # Auto-pickup items in new scene
+            self._auto_pickup_items_in_current_scene()
+
+        # Apply stat changes
+        if delta.stats_changes:
+            stats = self.scenario.player.stats
+            if stats is not None:
+                for key, value in delta.stats_changes.items():
+                    if hasattr(stats, key) and isinstance(value, (int, float)):
+                        current = getattr(stats, key, 0)
+                        setattr(stats, key, max(1, min(20, current + value)))
+
+        # Apply HP changes
+        if delta.hp_change != 0 and self.scenario.player.stats is not None:
+            stats = self.scenario.player.stats
+            stats.hp = max(0, min(stats.max_hp, stats.hp + delta.hp_change))
+
+        # Apply XP changes
+        if delta.xp_change != 0 and self.scenario.player.stats is not None:
+            stats = self.scenario.player.stats
+            stats.xp += delta.xp_change
+            # Level up if XP threshold reached (simple: level * 100 XP)
+            while stats.xp >= stats.level * 100:
+                stats.xp -= stats.level * 100
+                stats.level = min(20, stats.level + 1)
+                stats.max_hp += 5
+                stats.hp = stats.max_hp  # heal to full on level up
 
         # Move NPCs to scenes
         for move in delta.move_npc_to_scene:

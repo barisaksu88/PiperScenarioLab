@@ -4,6 +4,19 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 
+class CharacterStats(BaseModel):
+    strength: int = Field(default=10, ge=1, le=20)
+    dexterity: int = Field(default=10, ge=1, le=20)
+    constitution: int = Field(default=10, ge=1, le=20)
+    intelligence: int = Field(default=10, ge=1, le=20)
+    wisdom: int = Field(default=10, ge=1, le=20)
+    charisma: int = Field(default=10, ge=1, le=20)
+    hp: int = Field(default=20, ge=0)
+    max_hp: int = Field(default=20, ge=1)
+    xp: int = Field(default=0, ge=0)
+    level: int = Field(default=1, ge=1, le=20)
+
+
 class NPCRelationship(BaseModel):
     trust: int = Field(default=0, ge=-100, le=100)
     fear: int = Field(default=0, ge=-100, le=100)
@@ -35,6 +48,8 @@ class NPC(BaseModel):
     can_reveal: List[str] = Field(default_factory=list)
     triggers: List[NPCTrigger] = Field(default_factory=list)
     status: str = "available"  # available, unavailable, hostile, dead, etc.
+    schedule: Dict[str, str] = Field(default_factory=dict)  # time_of_day -> scene_id
+    last_spoke_turn: int = Field(default=0, ge=0)
 
 
 class DialogueLine(BaseModel):
@@ -83,6 +98,9 @@ class Item(BaseModel):
     name: str
     description: str = ""
     category: str = "general"  # general, artifact, tool, consumable
+    usable: bool = False
+    effect_description: str = ""
+    consumable: bool = False
 
 
 class Skill(BaseModel):
@@ -103,6 +121,9 @@ class PlayerState(BaseModel):
     skills: List[str] = Field(default_factory=list)
     clues: List[str] = Field(default_factory=list)
     flags: Dict[str, Any] = Field(default_factory=dict)
+    stats: CharacterStats = Field(default_factory=CharacterStats)
+    time_of_day: str = "morning"  # morning, afternoon, evening, night
+    picked_up_items: List[str] = Field(default_factory=list)
 
 
 class ScenarioMetadata(BaseModel):
@@ -157,6 +178,9 @@ class StateDelta(BaseModel):
     complete_objectives: List[str] = Field(default_factory=list)
     fail_objectives: List[str] = Field(default_factory=list)
     npc_status_changes: Dict[str, str] = Field(default_factory=dict)
+    stats_changes: Dict[str, Any] = Field(default_factory=dict)
+    hp_change: int = 0
+    xp_change: int = 0
 
 
 class TurnProposal(BaseModel):
@@ -195,6 +219,7 @@ class TurnResult(BaseModel):
     clues_found: int = 0
     acts_total: int = 0
     acts_complete: int = 0
+    stats: Optional[CharacterStats] = None
 
 
 class SessionLogEntry(BaseModel):
@@ -240,3 +265,5 @@ class SessionStateResponse(BaseModel):
     clues_found: int = 0
     acts_total: int = 0
     acts_complete: int = 0
+    stats: Optional[CharacterStats] = None
+    time_of_day: str = "morning"

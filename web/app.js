@@ -359,6 +359,35 @@ function renderSidebar(state) {
     scenarioInfoEl.innerHTML = '<div class="empty-msg">No scenario loaded</div>';
   }
 
+  // Stats panel
+  if (state.stats) {
+    const stats = state.stats;
+    const hpPct = stats.max_hp > 0 ? Math.round((stats.hp / stats.max_hp) * 100) : 0;
+    scorePanelEl.insertAdjacentHTML('beforebegin', `
+      <div class="sidebar-section">
+        <h3>Character Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-box"><span class="stat-label">STR</span><span class="stat-value">${stats.strength}</span></div>
+          <div class="stat-box"><span class="stat-label">DEX</span><span class="stat-value">${stats.dexterity}</span></div>
+          <div class="stat-box"><span class="stat-label">CON</span><span class="stat-value">${stats.constitution}</span></div>
+          <div class="stat-box"><span class="stat-label">INT</span><span class="stat-value">${stats.intelligence}</span></div>
+          <div class="stat-box"><span class="stat-label">WIS</span><span class="stat-value">${stats.wisdom}</span></div>
+          <div class="stat-box"><span class="stat-label">CHA</span><span class="stat-value">${stats.charisma}</span></div>
+        </div>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar" style="width:${hpPct}%"></div>
+          <span class="hp-text">HP ${stats.hp}/${stats.max_hp}</span>
+        </div>
+        <div class="xp-row">LV ${stats.level} | XP ${stats.xp}</div>
+      </div>
+    `);
+  }
+
+  // Time of day
+  const timeOfDay = state.time_of_day || (state.player && state.player.time_of_day) || 'morning';
+  const timeIcon = { morning: '🌅', afternoon: '☀️', evening: '🌇', night: '🌙' }[timeOfDay] || '☀️';
+  scenarioInfoEl.insertAdjacentHTML('afterbegin', `<div class="time-of-day">${timeIcon} ${capitalize(timeOfDay)}</div>`);
+
   // Score / Progress panel
   if (state.score !== undefined && state.scenario) {
     const objectivesTotal = state.objectives_total ?? 0;
@@ -450,7 +479,19 @@ function renderSidebar(state) {
     const invList = document.createElement('ul');
     for (const item of state.inventory_items) {
       const li = document.createElement('li');
-      li.textContent = item.name || item.id;
+      li.className = 'inventory-item';
+      const name = document.createElement('span');
+      name.className = 'item-name';
+      name.textContent = item.name || item.id;
+      li.appendChild(name);
+      if (item.usable) {
+        const useBtn = document.createElement('button');
+        useBtn.className = 'item-use-btn';
+        useBtn.textContent = 'Use';
+        useBtn.title = item.effect_description || 'Use this item';
+        useBtn.onclick = () => useItem(item.id);
+        li.appendChild(useBtn);
+      }
       invList.appendChild(li);
     }
     inventoryEl.innerHTML = '';
@@ -459,7 +500,11 @@ function renderSidebar(state) {
     const invList = document.createElement('ul');
     for (const itemId of state.player.inventory) {
       const li = document.createElement('li');
-      li.textContent = itemId;
+      li.className = 'inventory-item';
+      const name = document.createElement('span');
+      name.className = 'item-name';
+      name.textContent = itemId;
+      li.appendChild(name);
       invList.appendChild(li);
     }
     inventoryEl.innerHTML = '';
@@ -540,6 +585,47 @@ function parseNarrationSegments(text) {
   }
   flushText();
   return segments;
+}
+
+async function useItem(itemId) {
+  if (isLoading) return;
+  setLoading(true);
+  try {
+    const result = await apiPost('/api/use_item', { item_id: itemId });
+    currentTurnNumber = result.turn_number || currentTurnNumber + 1;
+    appendTurnResult({
+      turn_number: result.turn_number,
+      timestamp: result.timestamp || new Date().toISOString(),
+      user_input: `Used ${itemId}`,
+      narration: result.narration || '',
+      npc_dialogue: result.npc_dialogue || [],
+      next_options: result.next_options || [],
+      used_skills: result.used_skills || [],
+    });
+
+    if (result.ending) {
+      showEnding(result);
+    }
+
+    if (result.player_state) {
+      const fullState = await apiGet('/api/state');
+      renderSidebar(fullState);
+    }
+
+    renderOptions(result.next_options && result.next_options.length > 0 ? result.next_options : ['Continue.', 'Look around.', 'Wait.']);
+    userInputEl.value = '';
+    userInputEl.focus();
+  } catch (err) {
+    appendFeedEntry({
+      kind: 'error',
+      turn_number: currentTurnNumber,
+      timestamp: new Date().toISOString(),
+      title: 'Error',
+      narration: `Error using item: ${err.message}. Please try again.`,
+    });
+  } finally {
+    setLoading(false);
+  }
 }
 
 function renderOptions(options) {

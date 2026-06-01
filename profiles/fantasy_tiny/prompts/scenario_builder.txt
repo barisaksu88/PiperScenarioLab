@@ -76,7 +76,13 @@ The JSON must match this schema exactly:
       "knows": ["clue_ids or topics"],
       "can_reveal": ["clue_ids this NPC can share"],
       "triggers": [{"condition": "flag_key or 'flag:name'", "effect": "description"}],
-      "status": "available"
+      "status": "available",
+      "schedule": {
+        "morning": "scene_id",
+        "afternoon": "scene_id",
+        "evening": "scene_id",
+        "night": "scene_id"
+      }
     }
   },
   "items": {
@@ -84,7 +90,10 @@ The JSON must match this schema exactly:
       "id": "item_id",
       "name": "string",
       "description": "string",
-      "category": "general | artifact | tool | consumable"
+      "category": "general | artifact | tool | consumable",
+      "usable": true,
+      "effect_description": "string — what happens when used",
+      "consumable": false
     }
   },
   "skills": {
@@ -101,7 +110,10 @@ The JSON must match this schema exactly:
     "inventory": [],
     "skills": ["skill_ids"],
     "clues": [],
-    "flags": {}
+    "flags": {},
+    "stats": null,
+    "time_of_day": "morning",
+    "picked_up_items": []
   },
   "global_flags": {}
 }

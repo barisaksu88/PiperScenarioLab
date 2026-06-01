@@ -51,6 +51,9 @@ NPCs PRESENT:
 PLAYER STATE:
 Inventory: {inventory_list}
 Clues: {clues_list}
+Character Stats: {stats}
+HP: {stats_hp}/{stats_max_hp} | Level: {stats_level} | XP: {stats_xp}
+Time of Day: {time_of_day}
 Flags: {flags}
 
 RECENT HISTORY:
