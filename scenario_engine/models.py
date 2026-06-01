@@ -124,6 +124,8 @@ class PlayerState(BaseModel):
     stats: CharacterStats = Field(default_factory=CharacterStats)
     time_of_day: str = "morning"  # morning, afternoon, evening, night
     picked_up_items: List[str] = Field(default_factory=list)
+    act_start_turn: int = Field(default=0, ge=0)  # turn number when current act started
+    turns_in_act: int = Field(default=0, ge=0)  # how many turns spent in current act
 
 
 class ScenarioMetadata(BaseModel):

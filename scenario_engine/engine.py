@@ -78,6 +78,9 @@ class ScenarioEngine:
             self._auto_pickup_items_in_current_scene()
             # Set NPCs to their initial scene positions
             self._update_npc_positions_by_schedule()
+            # Track when this act started
+            self.scenario.player.act_start_turn = self.turn_number
+            self.scenario.player.turns_in_act = 0
 
         initial_state = self._build_session_state_dict()
         self.storage.save_session(self.session_id, initial_state)
@@ -195,6 +198,8 @@ class ScenarioEngine:
             raise RuntimeError("No scenario loaded. Call load_scenario() first.")
 
         self.turn_number += 1
+        if self.scenario is not None:
+            self.scenario.player.turns_in_act += 1
 
         # Step 2a: Validate player input for impossible actions
         rejection = self.validator.validate_player_input(turn_input.user_input)
@@ -982,6 +987,8 @@ class ScenarioEngine:
 
         Returns a dict with 'transition' or 'ending' text if progression occurred.
         """
+        MIN_TURNS_PER_ACT = 3
+
         if self.scenario is None:
             return None
 
@@ -991,6 +998,10 @@ class ScenarioEngine:
 
         flags_met = all(flag in self.scenario.player.flags for flag in current_act.completion_flags)
         if not flags_met:
+            return None
+
+        # Enforce minimum turns per act
+        if self.scenario.player.turns_in_act < MIN_TURNS_PER_ACT:
             return None
 
         # Find ordered list of act IDs
@@ -1004,6 +1015,9 @@ class ScenarioEngine:
             next_act_id = act_ids[current_index + 1]
             next_act = self.scenario.acts[next_act_id]
             self.scenario.player.current_act = next_act_id
+            # Reset act tracking
+            self.scenario.player.act_start_turn = self.turn_number
+            self.scenario.player.turns_in_act = 0
             # Move player to the first scene of the next act
             if next_act.scenes:
                 first_scene_id = sorted(next_act.scenes.keys())[0]

@@ -349,12 +349,11 @@ function renderDialogueCard(line) {
 }
 
 function renderSidebar(state) {
-  // Clear any previously inserted dynamic elements to avoid duplication
-  sidebarEl.querySelectorAll('.time-of-day').forEach(el => el.remove());
-  sidebarEl.querySelectorAll('.stats-section').forEach(el => el.remove());
-
   if (state.scenario) {
-    scenarioInfoEl.innerHTML = `
+    const timeOfDay = state.time_of_day || (state.player && state.player.time_of_day) || 'morning';
+    const timeIcon = { morning: '🌅', afternoon: '☀️', evening: '🌇', night: '🌙' }[timeOfDay] || '☀️';
+    const timeHtml = `<div class="time-of-day">${timeIcon} ${capitalize(timeOfDay)}</div>`;
+    scenarioInfoEl.innerHTML = timeHtml + `
       <div><strong>${escapeHtml(state.scenario.title)}</strong></div>
       <div style="color:var(--muted); font-size:0.82rem; margin-top:0.25rem;">${escapeHtml(state.scenario.description || '')}</div>
       <div style="color:var(--muted); font-size:0.78rem; margin-top:0.25rem;">Difficulty: ${escapeHtml(state.scenario.difficulty || 'unknown')}</div>
@@ -363,11 +362,12 @@ function renderSidebar(state) {
     scenarioInfoEl.innerHTML = '<div class="empty-msg">No scenario loaded</div>';
   }
 
-  // Stats panel
+  // Stats panel (rendered inside score-panel to avoid accumulation)
+  let statsHtml = '';
   if (state.stats) {
     const stats = state.stats;
     const hpPct = stats.max_hp > 0 ? Math.round((stats.hp / stats.max_hp) * 100) : 0;
-    scorePanelEl.insertAdjacentHTML('beforebegin', `
+    statsHtml = `
       <div class="sidebar-section stats-section">
         <h3>Character Stats</h3>
         <div class="stats-grid">
@@ -384,13 +384,8 @@ function renderSidebar(state) {
         </div>
         <div class="xp-row">LV ${stats.level} | XP ${stats.xp}</div>
       </div>
-    `);
+    `;
   }
-
-  // Time of day
-  const timeOfDay = state.time_of_day || (state.player && state.player.time_of_day) || 'morning';
-  const timeIcon = { morning: '🌅', afternoon: '☀️', evening: '🌇', night: '🌙' }[timeOfDay] || '☀️';
-  scenarioInfoEl.insertAdjacentHTML('afterbegin', `<div class="time-of-day">${timeIcon} ${capitalize(timeOfDay)}</div>`);
 
   // Score / Progress panel
   if (state.score !== undefined && state.scenario) {
@@ -403,7 +398,7 @@ function renderSidebar(state) {
       ? Math.round((objectivesComplete / objectivesTotal) * 100)
       : 0;
 
-    scorePanelEl.innerHTML = `
+    scorePanelEl.innerHTML = statsHtml + `
       <div class="score-display">${state.score}</div>
       <div class="score-label">Score</div>
       <div class="score-details">
@@ -414,7 +409,7 @@ function renderSidebar(state) {
       </div>
     `;
   } else {
-    scorePanelEl.innerHTML = '<div class="empty-msg">No data</div>';
+    scorePanelEl.innerHTML = statsHtml + '<div class="empty-msg">No data</div>';
   }
 
   currentActEl.textContent = state.current_act ? capitalize(typeof state.current_act === 'string' ? state.current_act : (state.current_act.name || 'Unknown')) : 'None';
