@@ -91,6 +91,17 @@
 - [ ] **Add dice rolls to narrator prompt** — "Roll d20 + stat vs DC" for challenging actions
 - [ ] **Add damage/death** — HP can go to 0, game over if player dies
 
+### Critical: Stats Are Cosmetic Only
+**Problem:** Character stats (STR/DEX/CON/INT/WIS/CHA) are displayed in the UI but have ZERO mechanical effect on gameplay. The LLM decides all outcomes narratively. A STR 8 character has the same chance to break down a door as a STR 18 character.
+**Fix Plan:**
+- [ ] **Add dice roller to engine** — `roll_check(stat_name, dc)` returns `d20 + stat_modifier >= dc` with narrative description
+- [ ] **Add stat check prompts** — Before LLM narrates challenging actions, engine pre-rolls and injects result into prompt
+- [ ] **Add DC-gated content** — Doors, locks, persuasion checks with explicit DC values in scenario data
+- [ ] **Add item stat bonuses** — Weapons/armor give +STR, +DEX, etc. that modify rolls
+- [ ] **Add skill stat requirements** — Some skills require minimum stat (e.g., Heavy Strike needs STR 13+)
+- [ ] **Add automatic stat check narration** — Engine generates "Roll d20+3=17 vs DC 15: Success!" before LLM narrates the outcome
+- [ ] **Add critical success/failure** — Natural 20 = auto-success with bonus, natural 1 = auto-failure with consequence
+
 ### Important: World Still Static Between Playthroughs
 **Status:** Time-of-day changes scenes dynamically. But:
 - No weather/environmental effects
